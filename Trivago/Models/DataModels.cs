@@ -64,7 +64,9 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                MealPlan plan = new MealPlan(reader["name"].ToString(), (int)reader["price"]);
+                string name = reader["name"].ToString();
+                String price =reader["price"].ToString();
+                MealPlan plan = new MealPlan(name,(int.Parse(price)));
                 plans.Add(plan);
             }
             return plans;
@@ -79,7 +81,7 @@ namespace Trivago.Models
 
             command.CommandType = CommandType.Text;
             command.CommandText = @"SELECT Hotel.*
-                                    FROM Hotel,
+                                    FROM Hotel
                                     WHERE License_number = :license";
             command.Parameters.Add("license", licenseNumber);
 
@@ -157,7 +159,7 @@ namespace Trivago.Models
             return null;
         }
 
-        public List<RoomView> GetViews(int hotelLicense, int roomLicense)
+        public List<RoomView> GetViews(int hotelLicense, int roomNumber)
         {
             connection = new OracleConnection(oracleConnectionString);
             connection.Open();
@@ -168,8 +170,8 @@ namespace Trivago.Models
             command.CommandText = @"SELECT Room_view
                                     FROM Room_views
                                     WHERE Room_number = :room
-                                    AND Hotel_number = :hotel";
-            command.Parameters.Add("room", roomLicense);
+                                    AND license_number = :hotel";
+            command.Parameters.Add("room", roomNumber);
             command.Parameters.Add("hotel", hotelLicense);
 
             List<RoomView> views = new List<RoomView>();
