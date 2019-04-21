@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class RoomType
+    public class RoomType
     {
         public String Name;
         public int MaxGuests;

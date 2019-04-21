@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class Location
+    public class Location
     {
         public List<PlaceOfIntrest> PlacesOfIntrest;
-        String Country;
-        String City;
+        public String Country;
+        public String City;
     }
 }

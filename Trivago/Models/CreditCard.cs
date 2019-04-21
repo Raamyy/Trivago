@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class CreditCard
+    public class CreditCard
     {
         public String CardSerial;
         public int CVV;

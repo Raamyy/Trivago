@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class HotelFacility
+    public class HotelFacility
     {
         public CustomImage Image;
     }

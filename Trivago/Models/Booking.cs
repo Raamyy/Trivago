@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class Booking
+    public class Booking
     {
         public int Number;
         public DateTime StartDate;
