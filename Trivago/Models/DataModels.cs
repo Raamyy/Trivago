@@ -116,12 +116,12 @@ namespace Trivago.Models
             command.Connection = connection;
 
             command.CommandType = CommandType.Text;
-            command.CommandText = @"SELECT palce_of_intrest, place_image
+            command.CommandText = @"SELECT place_of_intrest, place_image
                                     FROM Places_of_intrest
                                     WHERE country = :country
                                     AND city = :city";
-            command.Parameters.Add("city", city);
             command.Parameters.Add("country", country);
+            command.Parameters.Add("city", city);
 
             List<PlaceOfIntrest> places = new List<PlaceOfIntrest>(0);
             OracleDataReader reader = command.ExecuteReader();
@@ -167,8 +167,8 @@ namespace Trivago.Models
             command.CommandType = CommandType.Text;
             command.CommandText = @"SELECT Room_view
                                     FROM Room_views
-                                    WHERE Room_number = room
-                                    AND Hotel_number = hotel";
+                                    WHERE Room_number = :room
+                                    AND Hotel_number = :hotel";
             command.Parameters.Add("room", roomLicense);
             command.Parameters.Add("hotel", hotelLicense);
 
@@ -206,6 +206,7 @@ namespace Trivago.Models
                 command.CommandType = CommandType.Text;
                 command.Parameters.Add("country", location.country);
                 command.Parameters.Add("city", location.city);
+                command.Parameters.Add("guests", guestsCount);
 
                 OracleDataReader reader = command.ExecuteReader();
                 Room room;

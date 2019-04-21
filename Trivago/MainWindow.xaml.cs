@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using Trivago.Models;
 
 namespace Trivago
-{
+{   
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -24,6 +24,12 @@ namespace Trivago
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            DataModels database = new DataModels();
+            // Test Your Functions here.
         }
     }
 }

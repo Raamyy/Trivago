@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Trivago"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Grid Loaded="Grid_Loaded">
         <TextBlock x:Name="Debug_TextBlock" HorizontalAlignment="Left" Margin="197,126,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Width="352" Height="235">
             <TextBlock.RenderTransform>
                 <TransformGroup>
@@ -17,6 +17,7 @@
                 </TransformGroup>
             </TextBlock.RenderTransform>
         </TextBlock>
+        <Image x:Name="myImage" HorizontalAlignment="Left" Height="100" Margin="440,221,0,0" VerticalAlignment="Top" Width="100"/>
 
     </Grid>
 </Window>
