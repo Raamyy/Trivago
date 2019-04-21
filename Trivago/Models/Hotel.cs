@@ -6,13 +6,24 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class Hotel
+    public class Hotel
     {
-        public int LicenceNumber;
-        public String Name;
-        public CustomImage Image;
-        public Location Location;
-        public List<HotelFacility> Facilities;
-        public List<MealPlan> MealPlans;
+        public int licenseNumber;
+        public String name;
+        public CustomImage image;
+        public Location location;
+        public List<HotelFacility> facilities;
+        public List<MealPlan> mealPlans;
+        
+        public Hotel(int licenseNumber, String name, CustomImage image, Location location, 
+            List<HotelFacility> facilities, List<MealPlan> mealPlans)
+        {
+            this.licenseNumber = licenseNumber;
+            this.name = name;
+            this.image = image;
+            this.location = location;
+            this.facilities = facilities;
+            this.mealPlans = mealPlans;
+        }
     }
 }

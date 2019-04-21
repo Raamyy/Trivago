@@ -6,10 +6,17 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class Location
+    public class Location
     {
-        public List<PlaceOfIntrest> PlacesOfIntrest;
-        String Country;
-        String City;
+        public List<PlaceOfIntrest> placesOfIntrest;
+        public String country;
+        public String city;
+
+        public Location(List<PlaceOfIntrest> places, String country, String city)
+        {
+            this.city = city;
+            this.country = country;
+            this.placesOfIntrest = places;
+        }
     }
 }

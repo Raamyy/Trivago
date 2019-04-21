@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class User
+    public class User
     {
         public String Username;
         public String Email;

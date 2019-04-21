@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class Website
+    public class Website
     {
         public String Name;
         public int Rating;

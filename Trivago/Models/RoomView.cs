@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace Trivago.Models
 {
-    class RoomView
+    public class RoomView
     {
-        String View;
+        String view;
+
+        public RoomView(String view)
+        {
+            this.view = view;
+        }
     }
 }
