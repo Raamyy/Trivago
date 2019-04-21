@@ -8,6 +8,13 @@ namespace Trivago.Models
 {
     public class HotelFacility
     {
-        public CustomImage Image;
+        String name;
+        public CustomImage image;
+        
+        public HotelFacility(String name, CustomImage image)
+        {
+            this.name = name;
+            this.image = image;
+        }
     }
 }

@@ -8,7 +8,13 @@ namespace Trivago.Models
 {
     public class RoomType
     {
-        public String Name;
-        public int MaxGuests;
+        public String name;
+        public int maxGuests;
+
+        public RoomType(String name, int maxGuests)
+        {
+            this.name = name;
+            this.maxGuests = maxGuests;
+        }
     }
 }

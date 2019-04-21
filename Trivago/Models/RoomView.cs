@@ -8,6 +8,11 @@ namespace Trivago.Models
 {
     public class RoomView
     {
-        String View;
+        String view;
+
+        public RoomView(String view)
+        {
+            this.view = view;
+        }
     }
 }

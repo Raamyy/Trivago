@@ -8,7 +8,13 @@ namespace Trivago.Models
 {
     public class MealPlan
     {
-        public String Name;
-        public int Price;
+        public String name;
+        public int price;
+
+        public MealPlan(String name, int price)
+        {
+            this.name = name;
+            this.price = price;
+        }
     }
 }

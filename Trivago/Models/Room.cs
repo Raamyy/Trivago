@@ -8,10 +8,20 @@ namespace Trivago.Models
 {
     public class Room
     {
-        public int Number;
-        public Hotel RoomHotel;
-        public RoomType Type;
-        public CustomImage Image;
-        public List<RoomView> Views;
+        public int number;
+        public Hotel hotel;
+        public RoomType type;
+        public CustomImage image;
+        public List<RoomView> views;
+
+        public Room(int number, Hotel hotel, RoomType type,
+            CustomImage image, List<RoomView> views)
+        {
+            this.number = number;
+            this.hotel = hotel;
+            this.type = type;
+            this.views = views;
+            this.image = image;
+        }
     }
 }
