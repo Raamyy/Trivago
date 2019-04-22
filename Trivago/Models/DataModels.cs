@@ -22,13 +22,14 @@ namespace Trivago.Models
             oracleConnectionString = "data source = orcl; user id = scott; password = tiger;";
             connection = new OracleConnection(oracleConnectionString);
             connection.Open();
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
         }
 
         public List<HotelFacility> GetFacilities(int hotelLicense)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT Facility_name, Facility_image
                                     FROM Hotel_Facilities
                                     WHERE License_Number = :license";
@@ -49,6 +50,10 @@ namespace Trivago.Models
 
         public List<MealPlan> GetMealPlans(int hotelLicense)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT Name, Price
                                     FROM Meal_Plan
                                     WHERE Hotel_License_Number = :license";
@@ -68,6 +73,10 @@ namespace Trivago.Models
 
         public Hotel GetHotel(int licenseNumber)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT Hotel.*
                                     FROM Hotel
                                     WHERE License_number = :license";
@@ -100,6 +109,10 @@ namespace Trivago.Models
 
         public List<PlaceOfIntrest> getPlacesOfInterest(String country, String city)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT place_of_intrest, place_image
                                     FROM Places_of_intrest
                                     WHERE country = :country
@@ -123,11 +136,15 @@ namespace Trivago.Models
 
         public RoomType GetRoomType(int numberOfGuest)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"select type_name
                                     FROM room_type
                                     Where maximum_guests = :guests";
-
             command.Parameters.Add("guests", numberOfGuest);
+
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -138,6 +155,10 @@ namespace Trivago.Models
 
         public List<RoomView> GetViews(int hotelLicense, int roomNumber)
         {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT Room_view
                                     FROM Room_views
                                     WHERE Room_number = :room
@@ -166,6 +187,10 @@ namespace Trivago.Models
             List<Room> rooms = new List<Room>();
             foreach (Location location in locations)
             {
+                command = new OracleCommand();
+                command.Connection = connection;
+                command.CommandType = CommandType.Text;
+
                 command.CommandText = @"SELECT Room.*, Hotel.license_number
                                         FROM Room, Hotel, Room_Type
                                         WHERE Room.hotel_license_number = Hotel.license_number
@@ -205,6 +230,10 @@ namespace Trivago.Models
             /// <summary>
             /// Checks if the given room is free to book within the give dates.
             /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             command.CommandText = @"SELECT Start_Date, End_Date
                                     FROM Booking
                                     WHERE Booking_Number = 
@@ -236,6 +265,10 @@ namespace Trivago.Models
             /// <summary>
             /// Arbitrary method used for populating the database.
             /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
             CustomImage image = new CustomImage("C:\\Users\\ahmed\\Pictures\\Screenshots\\Screenshot (2).png");
             command.CommandText = $"UPDATE Room SET Room_Image = :image";
             command.Parameters.Add("image", image.GetByteImage());
