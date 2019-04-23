@@ -8,19 +8,19 @@ namespace Trivago.Models
 {
     public class User
     {
-        public String Username;
-        public String Email;
-        public String Name;
-        public UserCategory Category;
-        public CreditCard UserCreditCard;
+        public String username;
+        public String email;
+        public String name;
+        public UserCategory category;
+        public CreditCard userCreditCard;
 
         public User(string username, string email, string name, UserCategory category, CreditCard userCreditCard)
         {
-            Username = username;
-            Email = email;
-            Name = name;
-            Category = category;
-            UserCreditCard = userCreditCard;
+            this.username = username;
+            this.email = email;
+            this.name = name;
+            this.category = category;
+            this.userCreditCard = userCreditCard;
         }
     }
 }

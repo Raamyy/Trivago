@@ -57,7 +57,7 @@ namespace Trivago.Models
 
         public Location GetLocation(String country, String city)
         {
-            Location location = new Location(getPlacesOfInterest(country, city), country, city);
+            Location location = new Location(GetPlacesOfInterest(country, city), country, city);
             return location;
         }
 
@@ -349,8 +349,11 @@ namespace Trivago.Models
             return plans;
         }
 
-        public List<PlaceOfIntrest> getPlacesOfInterest(String country, String city)
+        private List<PlaceOfIntrest> GetPlacesOfInterest(String country, String city)
         {
+            /// <summary>
+            /// Gets places of interest in a certain location defined by country and city.
+            /// </summary>
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -435,7 +438,7 @@ namespace Trivago.Models
                     room = GetRoom(hotel.licenseNumber, roomNumber);
 
                     // Check if the room is available in the given dates
-                    if (isRoomAvailable(room, startDate, endDate))
+                    if (IsRoomAvailable(room, startDate, endDate))
                         rooms.Add(room);
                 }
                 reader.Close();
@@ -443,7 +446,7 @@ namespace Trivago.Models
             return rooms;
         }
 
-        public List<Booking>GetUserBookings(User user)
+        public List<Booking> GetUserBookings(User user)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -452,7 +455,7 @@ namespace Trivago.Models
             command.CommandText = @"SELECT booking_number
                                     FROM Booking
                                     WHERE user_name = :userName";
-            command.Parameters.Add("userName", user.Username);
+            command.Parameters.Add("userName", user.username);
 
             OracleDataReader reader = command.ExecuteReader();
             List<Booking> bookings = new List<Booking>();
@@ -466,7 +469,7 @@ namespace Trivago.Models
         }
 
         // Helper Functions
-        bool isRoomAvailable(Room room, DateTime startDate, DateTime endDate)
+        bool IsRoomAvailable(Room room, DateTime startDate, DateTime endDate)
         {
             /// <summary>
             /// Checks if the given room is free to book within the give dates.
@@ -500,7 +503,12 @@ namespace Trivago.Models
 
             return true;
         }
-        public void addImage()
+
+        /*
+         * Insertion to database methods.
+         */
+
+        public void AddImage()
         {
             /// <summary>
             /// Arbitrary method used for populating the database.
@@ -515,7 +523,7 @@ namespace Trivago.Models
             command.ExecuteNonQuery();
         }
 
-        public void addHotel(Hotel hotel)
+        public void AddHotel(Hotel hotel)
         {
             /// <summary>
             /// Writes a Hotel object to the database,
@@ -537,11 +545,11 @@ namespace Trivago.Models
             command.ExecuteNonQuery();
 
             // Add Hotel facilities and meal plans (referencing Hotel)
-            addFacilities(hotel.licenseNumber, hotel.facilities);
-            addMealPlans(hotel.licenseNumber, hotel.mealPlans);
+            AddFacilities(hotel.licenseNumber, hotel.facilities);
+            AddMealPlans(hotel.licenseNumber, hotel.mealPlans);
         }
 
-        private void addFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
+        private void AddFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
         {
             foreach (HotelFacility facility in facilities)
             {
@@ -558,7 +566,7 @@ namespace Trivago.Models
             }
         }
 
-        private void addMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
+        private void AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
         {
             foreach (MealPlan plan in meals)
             {
@@ -576,7 +584,7 @@ namespace Trivago.Models
             }
         }
 
-        public void addLocation(Location location)
+        public void AddLocation(Location location)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -591,10 +599,10 @@ namespace Trivago.Models
             command.ExecuteNonQuery();
 
             // Add location's places of interest.
-            addPlacesOfInterest(location.placesOfIntrest);
+            AddPlacesOfInterest(location.placesOfIntrest);
         }
 
-        private void addPlacesOfInterest(List<PlaceOfIntrest> places)
+        private void AddPlacesOfInterest(List<PlaceOfIntrest> places)
         {
             foreach (PlaceOfIntrest place in places)
             {

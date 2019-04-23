@@ -15,8 +15,8 @@ namespace Trivago.Models
         public List<HotelFacility> facilities;
         public List<MealPlan> mealPlans;
         
-        public Hotel(int licenseNumber, String name, CustomImage image, Location location, 
-            List<HotelFacility> facilities, List<MealPlan> mealPlans)
+        public Hotel(int licenseNumber, String name, CustomImage image, 
+                     Location location, List<HotelFacility> facilities, List<MealPlan> mealPlans)
         {
             this.licenseNumber = licenseNumber;
             this.name = name;

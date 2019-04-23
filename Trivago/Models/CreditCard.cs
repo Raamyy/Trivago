@@ -8,15 +8,15 @@ namespace Trivago.Models
 {
     public class CreditCard
     {
-        public String CardSerial;
-        public int CVV;
-        public DateTime ExpirationDate;
+        public String cardSerial;
+        public int cvv;
+        public DateTime expirationDate;
 
-        public CreditCard(string cardSerial, int cVV, DateTime expirationDate)
+        public CreditCard(string cardSerial, int cvv, DateTime expirationDate)
         {
-            CardSerial = cardSerial;
-            CVV = cVV;
-            ExpirationDate = expirationDate;
+            this.cardSerial = cardSerial;
+            this.cvv = cvv;
+            this.expirationDate = expirationDate;
         }
     }
 }
