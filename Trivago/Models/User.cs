@@ -13,5 +13,14 @@ namespace Trivago.Models
         public String Name;
         public UserCategory Category;
         public CreditCard UserCreditCard;
+
+        public User(string username, string email, string name, UserCategory category, CreditCard userCreditCard)
+        {
+            Username = username;
+            Email = email;
+            Name = name;
+            Category = category;
+            UserCreditCard = userCreditCard;
+        }
     }
 }

@@ -10,5 +10,11 @@ namespace Trivago.Models
     {
         public String Name;
         public int Rating;
+
+        public Website(string name, int rating)
+        {
+            Name = name;
+            Rating = rating;
+        }
     }
 }

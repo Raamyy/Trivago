@@ -29,7 +29,8 @@ namespace Trivago
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             DataModels database = new DataModels();
-            // Test Your Functions here.
+            var x = database.GetUserBookings(database.GetUser("Ramy"));
+            MessageBox.Show("DONE");
         }
     }
 }

@@ -11,5 +11,12 @@ namespace Trivago.Models
         public String CardSerial;
         public int CVV;
         public DateTime ExpirationDate;
+
+        public CreditCard(string cardSerial, int cVV, DateTime expirationDate)
+        {
+            CardSerial = cardSerial;
+            CVV = cVV;
+            ExpirationDate = expirationDate;
+        }
     }
 }

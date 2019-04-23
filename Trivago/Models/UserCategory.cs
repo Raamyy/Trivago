@@ -11,5 +11,12 @@ namespace Trivago.Models
         public String Name;
         public int Discount;
         public int MinimumThreshold; // Number of bookings needed to enter the category.
+
+        public UserCategory(string name, int discount, int minimumThreshold)
+        {
+            Name = name;
+            Discount = discount;
+            MinimumThreshold = minimumThreshold;
+        }
     }
 }

@@ -24,6 +24,284 @@ namespace Trivago.Models
             connection.Open();
         }
 
+
+        public Hotel GetHotel(int licenseNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT Hotel.*
+                                    FROM Hotel
+                                    WHERE License_number = :license";
+            command.Parameters.Add("license", licenseNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                String hotelName = reader["hotel_name"].ToString();
+                byte[] image = (byte[])reader["hotel_image"];
+                String country = reader["country"].ToString();
+                String city = reader["city"].ToString();
+                Location location = GetLocation(country, city);
+                List<HotelFacility> facilities = GetFacilities(licenseNumber);
+                List<MealPlan> meals = GetMealPlans(licenseNumber);
+
+                Hotel hotel = new Hotel(licenseNumber, hotelName, new CustomImage(image),
+                    location, facilities, meals);
+                return hotel;
+            }
+
+            return null;
+        }
+
+        public Location GetLocation(String country, String city)
+        {
+            Location location = new Location(getPlacesOfInterest(country, city), country, city);
+            return location;
+        }
+
+        public Booking GetBooking(int bookingNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT Booking.*, website_name, room_number
+                                    FROM Booking, define_booking
+                                    WHERE booking.booking_number = :bookingNumber";
+            command.Parameters.Add("bookingNumber", bookingNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                DateTime startDate =(DateTime) reader["start_date"];
+                DateTime endDate =(DateTime) reader["end_date"];
+                int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
+                User bookingUser = GetUser(reader["user_name"].ToString());
+                int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
+                MealPlan bookingMealPlan = GetMealPlan( hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
+                Room room = GetRoom(hotelLicenceNumber, int.Parse(reader["room_number"].ToString()));
+                Review review = GetReview(bookingNumber);
+                Website website = GetWebsite(reader["website_name"].ToString());
+
+                Booking booking = new Booking(
+                        bookingNumber,
+                        startDate,
+                        endDate,
+                        numberOfGuests,
+                        bookingUser,
+                        bookingMealPlan,
+                        room,
+                        review,
+                        website
+                    );
+                return booking;
+            }
+            return null;
+        }
+
+        private Website GetWebsite(string websiteName)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT rating
+                                    FROM website
+                                    WHERE name = :websiteName";
+            command.Parameters.Add("websiteName", websiteName);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return new Website(websiteName, int.Parse(reader["rating"].ToString()));
+            }
+            return null;
+        }
+
+        private Review GetReview(int bookingNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM review
+                                    WHERE booking_number = :bookingNum";
+            command.Parameters.Add("bookingNum", bookingNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return new Review(reader["description"].ToString(), int.Parse(reader["rating"].ToString()));
+            }
+            return null;
+        }
+
+        private Room GetRoom(int hotelLicenceNumber, int roomNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM room
+                                    WHERE room_number = :roomNumber
+                                    AND hotel_license_number = :hotelNumber";
+
+            command.Parameters.Add("roomNumber", roomNumber);
+            command.Parameters.Add("hotelNumber", hotelLicenceNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                // Build the room object with the dependant objects
+                String s = reader["hotel_license_number"].ToString();
+                Hotel hotel = GetHotel(Int32.Parse(s));
+                List<RoomView> views = GetViews(roomNumber, hotelLicenceNumber);
+                byte[] image = (byte[])reader["room_image"];
+                string roomType = reader["room_type"].ToString();
+
+                return new Room(roomNumber, hotel, GetRoomType(roomType),
+                                new CustomImage(image), views);
+            }
+            return null;
+        }
+
+        private MealPlan GetMealPlan(int hotelLicenceNumber, string mealPlanName)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"SELECT price
+                                    FROM meal_plan
+                                    WHERE name = :mealName
+                                    AND hotel_license_number = :hotelNumber";
+                                    
+            command.Parameters.Add("mealName", mealPlanName);
+            command.Parameters.Add("hotelNumber", hotelLicenceNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int price = int.Parse(reader["price"].ToString());
+                return new MealPlan(mealPlanName, price);
+            }
+
+            return null;
+
+        }
+
+        public User GetUser(string userName)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM website_user
+                                    WHERE user_name = :userName";
+            command.Parameters.Add("userName", userName);
+
+            OracleDataReader reader = command.ExecuteReader();
+            User user = null;
+            while (reader.Read())
+            {
+                string email = reader["email"].ToString();
+                string name = reader["name"].ToString();
+                UserCategory category = GetUserCategory(reader["user_category"].ToString());
+                CreditCard creditCard = GetCreditCard(reader["credit_card_number"].ToString());
+                                        
+                user = new User(userName, email, name, category, creditCard);
+            }
+            reader.Close();
+            return user;
+        }
+
+        private CreditCard GetCreditCard(string creditCardNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM credit_card
+                                    WHERE credit_card_number = :creditNumber";
+            command.Parameters.Add("creditNumber", creditCardNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return new CreditCard(creditCardNumber,
+                                      int.Parse(reader["cvv"].ToString()),
+                                      (DateTime)reader["expiration_date"]);
+            }
+            return null;
+        }
+
+        private UserCategory GetUserCategory(string categoryName)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM user_category
+                                    WHERE name = :categoryName";
+            command.Parameters.Add("categoryName", categoryName);
+            
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                UserCategory userCategory = new UserCategory(categoryName,
+                    int.Parse(reader["discount"].ToString()),
+                    int.Parse(reader["minimum_threshold"].ToString())
+                    );
+                return userCategory;
+            }
+            return null;
+        }
+
+        public RoomType GetRoomType(int numberOfGuest)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"select type_name
+                                    FROM room_type
+                                    Where maximum_guests = :guests";
+            command.Parameters.Add("guests", numberOfGuest);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return new RoomType(reader[0].ToString(), numberOfGuest);
+            }
+            return null;
+        }
+
+        public RoomType GetRoomType(string typeName)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"select maximum_guests
+                                    FROM room_type
+                                    Where type_name = :type";
+            command.Parameters.Add("type", typeName);
+
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return new RoomType(typeName,int.Parse(reader[0].ToString()));
+            }
+            return null;
+        }
+
         public List<HotelFacility> GetFacilities(int hotelLicense)
         {
             command = new OracleCommand();
@@ -71,42 +349,6 @@ namespace Trivago.Models
             return plans;
         }
 
-        public Hotel GetHotel(int licenseNumber)
-        {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
-
-            command.CommandText = @"SELECT Hotel.*
-                                    FROM Hotel
-                                    WHERE License_number = :license";
-            command.Parameters.Add("license", licenseNumber);
-
-            OracleDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                String hotelName = reader["hotel_name"].ToString();
-                byte[] image = (byte[])reader["hotel_image"];
-                String country = reader["country"].ToString();
-                String city = reader["city"].ToString();
-                Location location = GetLocation(country, city);
-                List<HotelFacility> facilities = GetFacilities(licenseNumber);
-                List<MealPlan> meals = GetMealPlans(licenseNumber);
-
-                Hotel hotel = new Hotel(licenseNumber, hotelName, new CustomImage(image),
-                    location, facilities, meals);
-                return hotel;
-            }
-
-            return null;
-        }
-
-        public Location GetLocation(String country, String city)
-        {
-            Location location = new Location(getPlacesOfInterest(country, city), country, city);
-            return location;
-        }
-
         public List<PlaceOfIntrest> getPlacesOfInterest(String country, String city)
         {
             command = new OracleCommand();
@@ -134,25 +376,6 @@ namespace Trivago.Models
             return places;
         }
 
-        public RoomType GetRoomType(int numberOfGuest)
-        {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
-
-            command.CommandText = @"select type_name
-                                    FROM room_type
-                                    Where maximum_guests = :guests";
-            command.Parameters.Add("guests", numberOfGuest);
-
-            OracleDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                return new RoomType(reader[0].ToString(), numberOfGuest);
-            }
-            return null;
-        }
-
         public List<RoomView> GetViews(int hotelLicense, int roomNumber)
         {
             command = new OracleCommand();
@@ -177,8 +400,7 @@ namespace Trivago.Models
             return views;
         }
 
-        public List<Room> GetRooms(List<Location> locations, int guestsCount,
-            DateTime startDate, DateTime endDate)
+        public List<Room> GetRooms(List<Location> locations, int guestsCount, DateTime startDate, DateTime endDate)
         {
             /// <summary>
             /// Returns a list of rooms available in the given locations
@@ -206,15 +428,11 @@ namespace Trivago.Models
                 while (reader.Read())
                 {
                     // Build the room object with the dependant objects
-                    String s = reader["license_number"].ToString();
+                    
                     Hotel hotel = GetHotel(Int32.Parse(reader["license_number"].ToString()));
                     int roomNumber = Int32.Parse(reader["room_number"].ToString());
-                    int hotelNumber = Int32.Parse(reader["license_number"].ToString());
-                    List<RoomView> views = GetViews(roomNumber, hotelNumber);
-                    byte[] image = (byte[]) reader["room_image"];
 
-                    room = new Room(roomNumber, hotel, GetRoomType(guestsCount),
-                                    new CustomImage(image), views);
+                    room = GetRoom(hotel.licenseNumber, roomNumber);
 
                     // Check if the room is available in the given dates
                     if (isRoomAvailable(room, startDate, endDate))
@@ -225,6 +443,29 @@ namespace Trivago.Models
             return rooms;
         }
 
+        public List<Booking>GetUserBookings(User user)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT booking_number
+                                    FROM Booking
+                                    WHERE user_name = :userName";
+            command.Parameters.Add("userName", user.Username);
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Booking> bookings = new List<Booking>();
+            while (reader.Read())
+            {
+                Booking booking = GetBooking(int.Parse(reader["booking_number"].ToString()));
+                bookings.Add(booking);
+            }
+            reader.Close();
+            return bookings;
+        }
+
+        // Helper Functions
         bool isRoomAvailable(Room room, DateTime startDate, DateTime endDate)
         {
             /// <summary>
@@ -259,7 +500,6 @@ namespace Trivago.Models
 
             return true;
         }
-
         public void addImage()
         {
             /// <summary>
