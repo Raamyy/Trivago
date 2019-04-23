@@ -8,13 +8,13 @@ namespace Trivago.Models
 {
     public class Website
     {
-        public String Name;
-        public int Rating;
+        public String name;
+        public int rating;
 
         public Website(string name, int rating)
         {
-            Name = name;
-            Rating = rating;
+            this.name = name;
+            this.rating = rating;
         }
     }
 }
