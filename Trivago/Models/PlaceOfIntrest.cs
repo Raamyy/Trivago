@@ -10,7 +10,8 @@ namespace Trivago.Models
     {
         public String name;
         public CustomImage image;
-
+        public String country;
+        public String city;
         public PlaceOfIntrest(String name, CustomImage image)
         {
             this.name = name;

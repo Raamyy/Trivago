@@ -272,10 +272,106 @@ namespace Trivago.Models
             CustomImage image = new CustomImage("C:\\Users\\ahmed\\Pictures\\Screenshots\\Screenshot (2).png");
             command.CommandText = $"UPDATE Room SET Room_Image = :image";
             command.Parameters.Add("image", image.GetByteImage());
-            command.Connection = connection;
-
             command.ExecuteNonQuery();
-            connection.Close();
+        }
+
+        public void addHotel(Hotel hotel)
+        {
+            /// <summary>
+            /// Writes a Hotel object to the database,
+            /// along with its associated facilities and meal plans.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Add Hotel
+            command.CommandText = @"INSERT INTO Hotel
+                                    (License_Number, Hotel_Name, Hotel_Image, City, Country)
+                                    VALUES (:hotelLicense, :hotelName, :hotelImage, :city, :country);";
+            command.Parameters.Add("hotelLicense", hotel.licenseNumber);
+            command.Parameters.Add("hotelName", hotel.name);
+            command.Parameters.Add("hotelImage", hotel.image.GetByteImage());
+            command.Parameters.Add("city", hotel.location.city);
+            command.Parameters.Add("country", hotel.location.country);
+            command.ExecuteNonQuery();
+
+            // Add Hotel facilities and meal plans (referencing Hotel)
+            addFacilities(hotel.licenseNumber, hotel.facilities);
+            addMealPlans(hotel.licenseNumber, hotel.mealPlans);
+        }
+
+        private void addFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
+        {
+            foreach (HotelFacility facility in facilities)
+            {
+                command = new OracleCommand();
+                command.Connection = connection;
+                command.CommandType = CommandType.Text;
+
+                command.CommandText = @"INSERT INTO Hotel_Facilities
+                                        (License_Number, Facility_Name, Facility_Image)
+                                        VALUES (:hotelNumber, :facilityName, :facilityImage);";
+                command.Parameters.Add("hotelNumber", hotelLicenseNumber);
+                command.Parameters.Add("facilityName", facility.name);
+                command.Parameters.Add("facilityImage", facility.image.GetByteImage());
+            }
+        }
+
+        private void addMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
+        {
+            foreach (MealPlan plan in meals)
+            {
+                command = new OracleCommand();
+                command.Connection = connection;
+                command.CommandType = CommandType.Text;
+
+                command.CommandText = @"INSERT INTO Meal_Plan
+                                        (Name, Hotel_License_Number, Price)
+                                        VALUES (:name, :hotelNumber, :price)";
+                command.Parameters.Add("name", plan.name);
+                command.Parameters.Add("hotelNumber", hotelLicenseNumber);
+                command.Parameters.Add("price", plan.price);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void addLocation(Location location)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Add location object
+            command.CommandText = @"INSERT INTO Location
+                                    (Country, City)
+                                    VALUES (:country, :city);";
+            command.Parameters.Add("country", location.country);
+            command.Parameters.Add("city", location.city);
+            command.ExecuteNonQuery();
+
+            // Add location's places of interest.
+            addPlacesOfInterest(location.placesOfIntrest);
+        }
+
+        private void addPlacesOfInterest(List<PlaceOfIntrest> places)
+        {
+            foreach (PlaceOfIntrest place in places)
+            {
+                command = new OracleCommand();
+                command.Connection = connection;
+                command.CommandType = CommandType.Text;
+
+                // Add location object
+                command.CommandText = @"INSERT INTO Places_Of_Intrest
+                                        (country, city, place_of_intrest, place_image)
+                                        VALUES (:country, :city, :place_of_interest, :image)";
+                command.Parameters.Add("country", place.country);
+                command.Parameters.Add("city", place.city);
+                command.Parameters.Add("place_of_interest", place.name);
+                command.Parameters.Add("image", place.image.GetByteImage());
+                command.ExecuteNonQuery();
+            }
         }
     }
 }
