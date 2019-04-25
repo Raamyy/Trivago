@@ -18,5 +18,9 @@ namespace Trivago.Models
             this.country = country;
             this.placesOfIntrest = places;
         }
+        public override string ToString()
+        {
+            return country + ", " + city;
+        }
     }
 }
