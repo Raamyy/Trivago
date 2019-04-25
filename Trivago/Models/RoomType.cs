@@ -11,10 +11,20 @@ namespace Trivago.Models
         public String name;
         public int maxGuests;
 
+        public RoomType()
+        {
+            name = "";
+            maxGuests = 0;
+        }
+
         public RoomType(String name, int maxGuests)
         {
             this.name = name;
             this.maxGuests = maxGuests;
+        }
+        public override string ToString()
+        {
+            return this.name + "    " + maxGuests.ToString();
         }
     }
 }

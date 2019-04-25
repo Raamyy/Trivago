@@ -1,29 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Oracle.DataAccess.Client;
-using Oracle.DataAccess.Types;
 using System.Data;
-using System.Windows;
-
+using Trivago.Front_End;
 
 namespace Trivago.Models
 {
     public class DataModels
     {
+        private static DataModels dataModels;
         private string oracleConnectionString;
         private OracleConnection connection;
         private OracleCommand command;
-        public DataModels()
+
+        public static DataModels GetInstance()
+        {
+            if (dataModels == null)
+                dataModels = new DataModels();
+            return dataModels;
+        }
+
+        private DataModels()
         {
             oracleConnectionString = "data source = orcl; user id = scott; password = tiger;";
             connection = new OracleConnection(oracleConnectionString);
             connection.Open();
         }
 
+        public List<Location> GetAllLocations()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM location";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Location> locations = new List<Location>();
+            while (reader.Read())
+            {
+                string country = reader["country"].ToString();
+                string city = reader["city"].ToString();
+                List<PlaceOfIntrest> placesOfIntrests = GetPlacesOfInterest(country, city);
+                locations.Add(new Location(placesOfIntrests, country, city));
+            }
+            return locations;
+        }
+
+        public List<RoomType> GetAllRoomTypes()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM room_type";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<RoomType> roomTypes= new List<RoomType>();
+            while (reader.Read())
+            {
+                string name = reader["type_name"].ToString();
+                int maxGuests =int.Parse(reader["maximum_guests"].ToString());
+                
+                roomTypes.Add(new RoomType(name,maxGuests));
+            }
+            return roomTypes;
+        }
 
         public Hotel GetHotel(int licenseNumber)
         {
