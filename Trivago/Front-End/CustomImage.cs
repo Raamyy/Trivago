@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
 
-namespace Trivago.Models
+namespace Trivago.Front_End
 {
     public class CustomImage
     {
+        //
+        public static CustomImage NoImage = new CustomImage(@"resources\images\no-photo-available.png");
+
         private byte[] ByteImage; //contains the byte array of the image
 
         /// <summary>
