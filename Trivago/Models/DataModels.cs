@@ -120,12 +120,12 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                DateTime startDate =(DateTime) reader["start_date"];
-                DateTime endDate =(DateTime) reader["end_date"];
+                DateTime startDate = (DateTime) reader["start_date"];
+                DateTime endDate = (DateTime) reader["end_date"];
                 int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
                 User bookingUser = GetUser(reader["user_name"].ToString());
                 int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
-                MealPlan bookingMealPlan = GetMealPlan( hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
+                MealPlan bookingMealPlan = GetMealPlan(hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
                 Room room = GetRoom(hotelLicenceNumber, int.Parse(reader["room_number"].ToString()));
                 Review review = GetReview(bookingNumber);
                 Website website = GetWebsite(reader["website_name"].ToString());
@@ -513,10 +513,10 @@ namespace Trivago.Models
             return bookings;
         }
 
-        // Helper Functions
         bool IsRoomAvailable(Room room, DateTime startDate, DateTime endDate)
         {
             /// <summary>
+            /// Helper Function.
             /// Checks if the given room is free to book within the give dates.
             /// </summary>
             command = new OracleCommand();
@@ -548,6 +548,32 @@ namespace Trivago.Models
 
             return true;
         }
+
+        public List<Review> GetRoomReviews(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+
+            int roomNumber = room.number;
+            int hotelNumber = room.hotel.licenseNumber;
+            command.CommandText = "Get_Room_Reviews";
+            command.Parameters.Add("room_number", roomNumber);
+            command.Parameters.Add("hotel_number", hotelNumber);
+            command.Parameters.Add("reviews", OracleDbType.RefCursor, ParameterDirection.Output);
+            OracleDataReader reader = command.ExecuteReader();
+
+            List<Review> reviews = new List<Review>();
+            while (reader.Read())
+            {
+                Review review = new Review(reader["description"].ToString(), 
+                    Int32.Parse(reader["rating"].ToString()));
+                reviews.Add(review);
+            }
+
+            return reviews;
+        }
+
 
         /*
          * Insertion to database methods.
