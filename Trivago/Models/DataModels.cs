@@ -580,7 +580,7 @@ namespace Trivago.Models
          * Insertion to database methods.
          */
 
-        public void AddImage()
+        public bool AddImage()
         {
             /// <summary>
             /// Arbitrary method used for populating the database.
@@ -592,10 +592,18 @@ namespace Trivago.Models
             CustomImage image = new CustomImage("C:\\Users\\ahmed\\Pictures\\Screenshots\\Screenshot (2).png");
             command.CommandText = $"UPDATE Room SET Room_Image = :image";
             command.Parameters.Add("image", image.GetByteImage());
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (Oracle.DataAccess.Client.OracleException)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public void AddHotel(Hotel hotel)
+        public bool AddHotel(Hotel hotel)
         {
             /// <summary>
             /// Writes a Hotel object to the database,
@@ -614,14 +622,24 @@ namespace Trivago.Models
             command.Parameters.Add("hotelImage", hotel.image.GetByteImage());
             command.Parameters.Add("city", hotel.location.city);
             command.Parameters.Add("country", hotel.location.country);
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (Oracle.DataAccess.Client.OracleException)
+            {
+                return false;
+            }
 
             // Add Hotel facilities and meal plans (referencing Hotel)
-            AddFacilities(hotel.licenseNumber, hotel.facilities);
-            AddMealPlans(hotel.licenseNumber, hotel.mealPlans);
+            if (AddFacilities(hotel.licenseNumber, hotel.facilities) &
+                AddMealPlans(hotel.licenseNumber, hotel.mealPlans))
+                return true;
+            else
+                return false;
         }
 
-        private void AddFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
+        private bool AddFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
         {
             foreach (HotelFacility facility in facilities)
             {
@@ -635,10 +653,19 @@ namespace Trivago.Models
                 command.Parameters.Add("hotelNumber", hotelLicenseNumber);
                 command.Parameters.Add("facilityName", facility.name);
                 command.Parameters.Add("facilityImage", facility.image.GetByteImage());
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (Oracle.DataAccess.Client.OracleException)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        private void AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
+        private bool AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
         {
             foreach (MealPlan plan in meals)
             {
@@ -652,11 +679,19 @@ namespace Trivago.Models
                 command.Parameters.Add("name", plan.name);
                 command.Parameters.Add("hotelNumber", hotelLicenseNumber);
                 command.Parameters.Add("price", plan.price);
-                command.ExecuteNonQuery();
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (Oracle.DataAccess.Client.OracleException)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        public void AddLocation(Location location)
+        public bool AddLocation(Location location)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -668,13 +703,23 @@ namespace Trivago.Models
                                     VALUES (:country, :city);";
             command.Parameters.Add("country", location.country);
             command.Parameters.Add("city", location.city);
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (Oracle.DataAccess.Client.OracleException)
+            {
+                return false;
+            }
 
             // Add location's places of interest.
-            AddPlacesOfInterest(location.placesOfIntrest);
+            if (AddPlacesOfInterest(location.placesOfIntrest))
+                return true;
+            else
+                return false;
         }
 
-        private void AddPlacesOfInterest(List<PlaceOfIntrest> places)
+        private bool AddPlacesOfInterest(List<PlaceOfIntrest> places)
         {
             foreach (PlaceOfIntrest place in places)
             {
@@ -690,12 +735,23 @@ namespace Trivago.Models
                 command.Parameters.Add("city", place.city);
                 command.Parameters.Add("place_of_interest", place.name);
                 command.Parameters.Add("image", place.image.GetByteImage());
-                command.ExecuteNonQuery();
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (Oracle.DataAccess.Client.OracleException)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        public void addReview(Review review)
+        public bool AddReview(Review review)
         {
+            /// <summary>
+            /// Writes a Review object to the database.
+            /// </summary>
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.StoredProcedure;
@@ -705,7 +761,16 @@ namespace Trivago.Models
             command.Parameters.Add("description", review.description);
             command.Parameters.Add("rating", review.rating);
             command.Parameters.Add("booking_number", review.bookingNumber);
-            command.ExecuteNonQuery();
+            
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (Oracle.DataAccess.Client.OracleException)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
