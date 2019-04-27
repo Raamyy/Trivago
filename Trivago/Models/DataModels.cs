@@ -179,12 +179,13 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                return new Review(reader["description"].ToString(), int.Parse(reader["rating"].ToString()));
+                return new Review(reader["description"].ToString(), 
+                    int.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
             }
             return null;
         }
 
-        private Room GetRoom(int hotelLicenceNumber, int roomNumber)
+        public Room GetRoom(int hotelLicenceNumber, int roomNumber)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -567,7 +568,7 @@ namespace Trivago.Models
             while (reader.Read())
             {
                 Review review = new Review(reader["description"].ToString(), 
-                    Int32.Parse(reader["rating"].ToString()));
+                    Int32.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
                 reviews.Add(review);
             }
 
@@ -691,6 +692,20 @@ namespace Trivago.Models
                 command.Parameters.Add("image", place.image.GetByteImage());
                 command.ExecuteNonQuery();
             }
+        }
+
+        public void addReview(Review review)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+
+            // Add location object
+            command.CommandText = "Add_Review";
+            command.Parameters.Add("description", review.description);
+            command.Parameters.Add("rating", review.rating);
+            command.Parameters.Add("booking_number", review.bookingNumber);
+            command.ExecuteNonQuery();
         }
     }
 }
