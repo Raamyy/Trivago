@@ -40,12 +40,10 @@ namespace Trivago.Front_End
 
         }
 
-        public static NavigationCanvas GetInstance(Canvas canvas, double width, double height)
+        public static NavigationCanvas GetInstance(Canvas canvas)
         {
             if (navigationCanvas == null)
                 navigationCanvas = new NavigationCanvas(canvas);
-            navigationCanvas.SetCanvasWidth(width);
-            navigationCanvas.SetCanvasHeight(height);
             return navigationCanvas;
         }
 

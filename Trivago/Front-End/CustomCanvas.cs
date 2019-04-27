@@ -20,24 +20,21 @@ namespace Trivago.Front_End
             IsInitialized = false;
         }
 
-        protected void SetCanvasWidth(double width)
+        public void SetCanvasDimensions(double width, double height)
         {
             canvas.Width = width;
+            canvas.Height = height;
         }
 
-        protected void SetCanvasHeight(double height)
+        public void SetCanvasCoord(double x, double y)
         {
-            canvas.Height = height;
+            Canvas.SetLeft(canvas, x);
+            Canvas.SetTop(canvas, y);
         }
 
         public double GetCanvasWidth()
         {
             return canvas.Width;
-        }
-
-        public double GetCanvasHeight()
-        {
-            return canvas.Height;
         }
 
         public abstract void Initialize();
