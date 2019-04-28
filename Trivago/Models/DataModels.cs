@@ -62,13 +62,13 @@ namespace Trivago.Models
                                     FROM room_type";
 
             OracleDataReader reader = command.ExecuteReader();
-            List<RoomType> roomTypes= new List<RoomType>();
+            List<RoomType> roomTypes = new List<RoomType>();
             while (reader.Read())
             {
                 string name = reader["type_name"].ToString();
-                int maxGuests =int.Parse(reader["maximum_guests"].ToString());
-                
-                roomTypes.Add(new RoomType(name,maxGuests));
+                int maxGuests = int.Parse(reader["maximum_guests"].ToString());
+
+                roomTypes.Add(new RoomType(name, maxGuests));
             }
             return roomTypes;
         }
@@ -123,8 +123,8 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                DateTime startDate = (DateTime) reader["start_date"];
-                DateTime endDate = (DateTime) reader["end_date"];
+                DateTime startDate = (DateTime)reader["start_date"];
+                DateTime endDate = (DateTime)reader["end_date"];
                 int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
                 User bookingUser = GetUser(reader["user_name"].ToString());
                 int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
@@ -182,7 +182,7 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                return new Review(reader["description"].ToString(), 
+                return new Review(reader["description"].ToString(),
                     int.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
             }
             return null;
@@ -228,7 +228,7 @@ namespace Trivago.Models
                                     FROM meal_plan
                                     WHERE name = :mealName
                                     AND hotel_license_number = :hotelNumber";
-                                    
+
             command.Parameters.Add("mealName", mealPlanName);
             command.Parameters.Add("hotelNumber", hotelLicenceNumber);
 
@@ -262,7 +262,7 @@ namespace Trivago.Models
                 string name = reader["name"].ToString();
                 UserCategory category = GetUserCategory(reader["user_category"].ToString());
                 CreditCard creditCard = GetCreditCard(reader["credit_card_number"].ToString());
-                                        
+
                 user = new User(userName, email, name, category, creditCard);
             }
             reader.Close();
@@ -300,7 +300,7 @@ namespace Trivago.Models
                                     FROM user_category
                                     WHERE name = :categoryName";
             command.Parameters.Add("categoryName", categoryName);
-            
+
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -346,7 +346,7 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                return new RoomType(typeName,int.Parse(reader[0].ToString()));
+                return new RoomType(typeName, int.Parse(reader[0].ToString()));
             }
             return null;
         }
@@ -391,8 +391,8 @@ namespace Trivago.Models
             while (reader.Read())
             {
                 string name = reader["name"].ToString();
-                String price =reader["price"].ToString();
-                MealPlan plan = new MealPlan(name,(int.Parse(price)));
+                String price = reader["price"].ToString();
+                MealPlan plan = new MealPlan(name, (int.Parse(price)));
                 plans.Add(plan);
             }
             return plans;
@@ -419,7 +419,7 @@ namespace Trivago.Models
             while (reader.Read())
             {
                 String name = reader["place_of_intrest"].ToString();
-                byte[] placeImage = (byte[]) reader["place_image"];
+                byte[] placeImage = (byte[])reader["place_image"];
                 PlaceOfIntrest place = new PlaceOfIntrest(name, new CustomImage(placeImage));
                 places.Add(place);
             }
@@ -480,7 +480,7 @@ namespace Trivago.Models
                 while (reader.Read())
                 {
                     // Build the room object with the dependant objects
-                    
+
                     Hotel hotel = GetHotel(Int32.Parse(reader["license_number"].ToString()));
                     int roomNumber = Int32.Parse(reader["room_number"].ToString());
 
@@ -515,6 +515,31 @@ namespace Trivago.Models
             }
             reader.Close();
             return bookings;
+        }
+
+        // returns list of pair website data and it's price for a specific room
+        public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT website_name, price
+                                    from room_price
+                                     where room_number = :room
+                                     and license_number = :hotel";
+            command.Parameters.Add("room", room.number);
+            command.Parameters.Add("hotel", room.hotel.licenseNumber);
+
+            List<Tuple<Website, int>> websitesPrices = new List<Tuple<Website, int>>();
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Website website = GetWebsite(reader["website_name"].ToString());
+                int price = int.Parse(reader["price"].ToString());
+                websitesPrices.Add(new Tuple<Website, int>(website, price));
+            }
+            return websitesPrices;
         }
 
         bool IsRoomAvailable(Room room, DateTime startDate, DateTime endDate)
@@ -570,7 +595,7 @@ namespace Trivago.Models
             List<Review> reviews = new List<Review>();
             while (reader.Read())
             {
-                Review review = new Review(reader["description"].ToString(), 
+                Review review = new Review(reader["description"].ToString(),
                     Int32.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
                 reviews.Add(review);
             }
@@ -578,6 +603,32 @@ namespace Trivago.Models
             return reviews;
         }
 
+        public List<Review> GetHotelReviews(Hotel hotel)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM Review
+                                    WHERE booking_number in (
+                                      SELECT booking_number
+                                      FROM Define_Booking
+                                      WHERE hotel_license_number = :hotel);";
+            command.Parameters.Add("hotelNumber", hotel.licenseNumber);
+
+            List<Review> reviews = new List<Review>();
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                reviews.Add(
+                    new Review(reader["description"].ToString(),
+                                int.Parse(reader["rating"].ToString()),
+                                int.Parse(reader["booking_number"].ToString()))
+                                );
+            }
+            return reviews;
+        }
 
         /*
          * Insertion to database methods.
@@ -768,7 +819,7 @@ namespace Trivago.Models
             command.Parameters.Add("description", review.description);
             command.Parameters.Add("rating", review.rating);
             command.Parameters.Add("booking_number", review.bookingNumber);
-            
+
             try
             {
                 command.ExecuteNonQuery();
@@ -840,7 +891,7 @@ namespace Trivago.Models
                                     VALUES (:bookingNumber, :sDate, :eDate, :guests, :userName,
                                     :mealPlan, :licenseNumber)";
             command.Parameters.Add("bookingNumber", booking.number);
-            command.Parameters.Add("sDate",(OracleDate) booking.startDate);
+            command.Parameters.Add("sDate", (OracleDate)booking.startDate);
             command.Parameters.Add("eDate", (OracleDate)booking.endDate);
             command.Parameters.Add("guests", booking.numberOfGuests);
             command.Parameters.Add("userName", booking.bookingUser.username);
