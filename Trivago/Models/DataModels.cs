@@ -829,6 +829,9 @@ namespace Trivago.Models
 
         public bool AddBooking(Booking booking)
         {
+            if (!IsRoomAvailable(booking.bookingRoom, booking.startDate.AddMonths(1), booking.endDate.AddMonths(1)))
+                return false;
+
             // TODO: Add Define booking
             command = new OracleCommand();
             command.Connection = connection;
@@ -840,18 +843,12 @@ namespace Trivago.Models
                                     VALUES (:bookingNumber, :sDate, :eDate, :guests, :userName,
                                     :mealPlan, :licenseNumber)";
             command.Parameters.Add("bookingNumber", booking.number);
-            command.Parameters.Add("sDate",(OracleDate) booking.startDate);
+            command.Parameters.Add("sDate", (OracleDate)booking.startDate);
             command.Parameters.Add("eDate", (OracleDate)booking.endDate);
             command.Parameters.Add("guests", booking.numberOfGuests);
             command.Parameters.Add("userName", booking.bookingUser.username);
             command.Parameters.Add("mealPlan", booking.bookingMealPlan.name);
             command.Parameters.Add("licenseNumber", booking.bookingRoom.hotel.licenseNumber);
-            string s = booking.number.ToString() + " ";
-            s += booking.numberOfGuests.ToString() + " ";
-            s += booking.bookingUser.name + " ";
-            s += booking.bookingMealPlan.name + " ";
-            s += booking.bookingRoom.hotel.licenseNumber;
-            MessageBox.Show(s);
             try
             {
                 command.ExecuteNonQuery();
@@ -859,6 +856,25 @@ namespace Trivago.Models
             catch (OracleException e)
             {
                 MessageBox.Show(e.ToString());
+                return false;
+            }
+
+            command.CommandText = @"INSERT INTO Define_Booking
+                                    (website_name, hotel_license_number, room_number, booking_number)
+                                    VALUES (:websiteName, :hn, :rn, :bn)";
+            command.Parameters.Clear();
+            command.Parameters.Add("websiteName", booking.bookingWebsite.name);
+            command.Parameters.Add("hn", booking.bookingRoom.hotel.licenseNumber);
+            command.Parameters.Add("rn", booking.bookingRoom.number);
+            command.Parameters.Add("bn", booking.number);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show("asd "+booking.bookingWebsite.name+"\n"+booking.bookingRoom.number+"\n"
+                    +booking.number+"\n"+booking.bookingRoom.hotel.licenseNumber+ e.ToString());
                 return false;
             }
             return true;
