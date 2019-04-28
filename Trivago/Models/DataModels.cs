@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Oracle.DataAccess.Client;
 using System.Data;
 using Trivago.Front_End;
+using System.Windows;
+using System.Globalization;
+using Oracle.DataAccess.Types;
 
 namespace Trivago.Models
 {
@@ -596,7 +599,7 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (Oracle.DataAccess.Client.OracleException)
+            catch (OracleException)
             {
                 return false;
             }
@@ -626,7 +629,7 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (Oracle.DataAccess.Client.OracleException)
+            catch (OracleException)
             {
                 return false;
             }
@@ -657,7 +660,7 @@ namespace Trivago.Models
                 {
                     command.ExecuteNonQuery();
                 }
-                catch (Oracle.DataAccess.Client.OracleException)
+                catch (OracleException)
                 {
                     return false;
                 }
@@ -667,6 +670,9 @@ namespace Trivago.Models
 
         private bool AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
         {
+            /// <summary>
+            /// Adds hotels meals to database.
+            /// </summary>
             foreach (MealPlan plan in meals)
             {
                 command = new OracleCommand();
@@ -683,7 +689,7 @@ namespace Trivago.Models
                 {
                     command.ExecuteNonQuery();
                 }
-                catch (Oracle.DataAccess.Client.OracleException)
+                catch (OracleException)
                 {
                     return false;
                 }
@@ -707,7 +713,7 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (Oracle.DataAccess.Client.OracleException)
+            catch (OracleException)
             {
                 return false;
             }
@@ -739,7 +745,7 @@ namespace Trivago.Models
                 {
                     command.ExecuteNonQuery();
                 }
-                catch (Oracle.DataAccess.Client.OracleException)
+                catch (OracleException)
                 {
                     return false;
                 }
@@ -751,6 +757,7 @@ namespace Trivago.Models
         {
             /// <summary>
             /// Writes a Review object to the database.
+            /// Done using an oracle stored procedure.
             /// </summary>
             command = new OracleCommand();
             command.Connection = connection;
@@ -766,8 +773,92 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (Oracle.DataAccess.Client.OracleException)
+            catch (OracleException)
             {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddWebsite(Website website)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Website
+                                    (name, rating)
+                                    VALUES (:name, :rating)";
+            command.Parameters.Add("name", website.name);
+            command.Parameters.Add("rating", website.rating);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddRoom(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Room
+                                    (room_number, hotel_liscence_number, room_type, room_image)
+                                    VALUES (:roomNumber, hoteNumber, roomType, roomImage)";
+            command.Parameters.Add("roomNUmber", room.number);
+            command.Parameters.Add("hotelNumber", room.hotel.licenseNumber);
+            command.Parameters.Add("roomType", room.type.name);
+            command.Parameters.Add("roomImage", room.image.GetByteImage());
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddBooking(Booking booking)
+        {
+            // TODO: Add Define booking
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Booking
+                                    (booking_number, start_date, end_date, number_of_guests, user_name,
+                                        meal_plan, LICENCE_NUMBER)
+                                    VALUES (:bookingNumber, :sDate, :eDate, :guests, :userName,
+                                    :mealPlan, :licenseNumber)";
+            command.Parameters.Add("bookingNumber", booking.number);
+            command.Parameters.Add("sDate",(OracleDate) booking.startDate);
+            command.Parameters.Add("eDate", (OracleDate)booking.endDate);
+            command.Parameters.Add("guests", booking.numberOfGuests);
+            command.Parameters.Add("userName", booking.bookingUser.username);
+            command.Parameters.Add("mealPlan", booking.bookingMealPlan.name);
+            command.Parameters.Add("licenseNumber", booking.bookingRoom.hotel.licenseNumber);
+            string s = booking.number.ToString() + " ";
+            s += booking.numberOfGuests.ToString() + " ";
+            s += booking.bookingUser.name + " ";
+            s += booking.bookingMealPlan.name + " ";
+            s += booking.bookingRoom.hotel.licenseNumber;
+            MessageBox.Show(s);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
                 return false;
             }
             return true;
