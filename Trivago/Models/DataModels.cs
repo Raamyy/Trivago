@@ -168,24 +168,29 @@ namespace Trivago.Models
             return null;
         }
 
-        private Review GetReview(int bookingNumber)
+        public Review GetReview(int bookingNumber)
         {
             command = new OracleCommand();
             command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            command.CommandType = CommandType.StoredProcedure;
 
-            command.CommandText = @"SELECT *
-                                    FROM review
-                                    WHERE booking_number = :bookingNum";
-            command.Parameters.Add("bookingNum", bookingNumber);
+            command.CommandText = "Get_Review";
+            command.Parameters.Add("booking_number_in", bookingNumber);
+            command.Parameters.Add("Description_out", OracleDbType.Varchar2, 100).Direction = ParameterDirection.Output;
+            command.Parameters.Add("Rating_out", OracleDbType.Int32, ParameterDirection.Output);
 
-            OracleDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                return new Review(reader["description"].ToString(),
-                    int.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
+            command.ExecuteNonQuery();
             }
-            return null;
+            catch
+            {
+                return null;
+            }
+
+            return new Review(command.Parameters["Description_out"].Value.ToString(),
+                              int.Parse(command.Parameters["Rating_out"].Value.ToString()),
+                              bookingNumber);            
         }
 
         public Room GetRoom(int hotelLicenceNumber, int roomNumber)

@@ -29,6 +29,7 @@ namespace Trivago
         {
             InitializeComponent();
             InitializeCanvases();
+            Review rev =  DataModels.GetInstance().GetReview(1); // for testing
         }
         
         public Canvas GetHomeCanvas()
