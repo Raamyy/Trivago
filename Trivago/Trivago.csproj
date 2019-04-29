@@ -71,6 +71,7 @@
     <Compile Include="Front-End\HomeCanvas.cs" />
     <Compile Include="Front-End\ImageAlbum.cs" />
     <Compile Include="Front-End\NavigationCanvas.cs" />
+    <Compile Include="Front-End\RoomsListShowCanvas.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

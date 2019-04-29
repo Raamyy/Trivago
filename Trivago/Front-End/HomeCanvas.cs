@@ -24,22 +24,25 @@ namespace Trivago.Front_End
             selectedType = new RoomType();
         }
 
-        public static HomeCanvas GetInstance(Canvas canvas, double width, double height)
+        public static HomeCanvas GetInstance(Canvas canvas)
         {
             if (homeCanvas == null)
                 homeCanvas = new HomeCanvas(canvas);
-            homeCanvas.SetCanvasWidth(width);
-            homeCanvas.SetCanvasHeight(height);
             return homeCanvas;
         }
 
         public override void Initialize()
         {
-            double itemsSpacing = 50;
+            selectedLocations = new List<Location>();
+            selectedDateRange = null;
+            selectedType = null;
 
-            canvas.Margin = new Thickness(0, 100, 0, 0);
+            double itemsSpacing = 50;
+            
+            //set canvas background
             canvas.Background = new SolidColorBrush(Color.FromRgb(255, 0, 0));
 
+            //creates room type combobox
             ComboBox roomTypesComboBox = new ComboBox
             {
                 Width = 200,
@@ -54,36 +57,39 @@ namespace Trivago.Front_End
             Canvas.SetTop(roomTypesComboBox, canvas.Height / 3);
             canvas.Children.Add(roomTypesComboBox);
 
-            Calendar bookingCalender = new Calendar
+            //creates booking range calendar
+            Calendar bookingCalendar = new Calendar
             {
                 SelectionMode = CalendarSelectionMode.SingleRange
             };
-            bookingCalender.SelectedDatesChanged += Calander_SelectedDatesChanged;
-            Canvas.SetLeft(bookingCalender, 2 * itemsSpacing + roomTypesComboBox.Width);
-            Canvas.SetTop(bookingCalender, canvas.Height / 3);
-            canvas.Children.Add(bookingCalender);
+            selectedDateRange = new CalendarDateRange(DateTime.Today, DateTime.Today);
+            bookingCalendar.SelectedDatesChanged += Calander_SelectedDatesChanged;
+            Canvas.SetLeft(bookingCalendar, 2 * itemsSpacing + roomTypesComboBox.Width);
+            Canvas.SetTop(bookingCalendar, canvas.Height / 3);
+            canvas.Children.Add(bookingCalendar);
 
-            Expander expander = new Expander
+            //creates locations check boxes
+            Expander locationsExpander = new Expander
             {
                 Width = 160,
                 Height = 200,
                 Header = "Locations"
             };
-            ScrollViewer scrollViewer = new ScrollViewer();
-            StackPanel stackPanel = new StackPanel();
-            expander.Content = scrollViewer;
-            scrollViewer.Content = stackPanel;
+            ScrollViewer locationsScrollViewer = new ScrollViewer();
+            StackPanel locationsStackPanel = new StackPanel();
+            locationsExpander.Content = locationsScrollViewer;
+            locationsScrollViewer.Content = locationsStackPanel;
             List<Location> locations = DataModels.GetInstance().GetAllLocations();
             foreach(Location location in locations)
             {
-                CheckBox checkBox = new CheckBox { Content = location, FontSize = 20 };
-                checkBox.Checked += CheckBox_Checked;
-                checkBox.Unchecked += CheckBox_Unchecked;
-                stackPanel.Children.Add(checkBox);
+                CheckBox locationCheckBox = new CheckBox { Content = location, FontSize = 20 };
+                locationCheckBox.Checked += CheckBox_Checked;
+                locationCheckBox.Unchecked += CheckBox_Unchecked;
+                locationsStackPanel.Children.Add(locationCheckBox);
             }
-            Canvas.SetLeft(expander, itemsSpacing);
-            Canvas.SetTop(expander, canvas.Height / 3);
-            canvas.Children.Add(expander);
+            Canvas.SetLeft(locationsExpander, itemsSpacing);
+            Canvas.SetTop(locationsExpander, canvas.Height / 3);
+            canvas.Children.Add(locationsExpander);
 
             Button searchButton = FrontEndHelper.CreateButton(150, 60, "Search");
             searchButton.Click += FrontEndHelper.GetMainWindow().SearchButton_Click;

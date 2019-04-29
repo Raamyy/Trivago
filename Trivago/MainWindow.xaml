@@ -65,7 +65,10 @@
             
         </Canvas>
         <Canvas x:Name="HomeCanvas">
-
+            
+        </Canvas>
+        <Canvas x:Name= "RoomsListShowCanvas">
+            
         </Canvas>
     </Canvas>
 </Window>
