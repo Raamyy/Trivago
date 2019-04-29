@@ -117,9 +117,15 @@ namespace Trivago
         public void SearchButton_Click(object sender, RoutedEventArgs args)
         {
             Front_End.HomeCanvas homeCanvas = Front_End.HomeCanvas.GetInstance(HomeCanvas);
+            if(homeCanvas.selectedLocations.Count == 0)
+            {
+                MessageBox.Show("You Must Choose a location !", "Error");
+                return;
+            }
             List<Room> rooms = DataModels.GetInstance().GetRooms(homeCanvas.selectedLocations, homeCanvas.selectedType.maxGuests,
                 homeCanvas.selectedDateRange.Start, homeCanvas.selectedDateRange.End);
 
+            // TODO: Remove this
             for (int i = 0; i < 10; i++)
                 rooms.Add(rooms[0]);
 
