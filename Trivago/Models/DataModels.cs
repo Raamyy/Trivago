@@ -415,6 +415,50 @@ namespace Trivago.Models
             return null;
         }
 
+        public List<Booking> GetRoomBookings(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"select booking.*, website_name
+                                    FROM booking, define_booking
+                                    Where room_number = :room
+                                    AND hotel_license_number = :hotel";
+
+            command.Parameters.Add("room", room.number);
+            command.Parameters.Add("hotel", room.hotel.licenseNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Booking> bookings = new List<Booking>();
+            while (reader.Read())
+            {
+                DateTime startDate = (DateTime)reader["start_date"];
+                DateTime endDate = (DateTime)reader["end_date"];
+                int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
+                User bookingUser = GetUser(reader["user_name"].ToString());
+                int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
+                MealPlan bookingMealPlan = GetMealPlan(hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
+                int bookingNumber = int.Parse(reader["booking_number"].ToString());
+                Review review = GetReview(bookingNumber);
+                Website website = GetWebsite(reader["website_name"].ToString());
+
+                Booking booking = new Booking(
+                        bookingNumber,
+                        startDate,
+                        endDate,
+                        numberOfGuests,
+                        bookingUser,
+                        bookingMealPlan,
+                        room,
+                        review,
+                        website
+                    );
+                bookings.Add(booking);
+            }
+            return bookings;
+        }
+
         public List<HotelFacility> GetFacilities(int hotelLicense)
         {
             command = new OracleCommand();

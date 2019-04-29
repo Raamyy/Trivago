@@ -33,6 +33,7 @@ namespace Trivago
             Review rev =  DataModels.GetInstance().GetReview(1); 
             List<Room> rooms = DataModels.GetInstance().GetAllRooms();
             var x = DataModels.GetInstance().GetWebsitePricesForRoom(rooms[2]);
+            var y = DataModels.GetInstance().GetRoomBookings(rooms[2]);
             List<Hotel> hotels = DataModels.GetInstance().GetAllHotels();
         }
         
