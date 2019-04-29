@@ -27,6 +27,7 @@ namespace Trivago
     {
         private const double NavigationCanvasHeight = 100;
         public CustomCanvas CurrentCanvas;
+        public CustomCanvas currentNavigationCanvas;
 
         public MainWindow()
         {
@@ -121,6 +122,7 @@ namespace Trivago
             navigationCanvas.SetCanvasCoord(0, 0);
             navigationCanvas.SetCanvasDimensions(Window.Width, NavigationCanvasHeight);
             navigationCanvas.Show();
+            currentNavigationCanvas = navigationCanvas;
         }
 
         private void InitializeLoggedinNavigationCanvas(User user)
@@ -129,6 +131,7 @@ namespace Trivago
             loggedinNavigationCanvas.SetCanvasCoord(0, 0);
             loggedinNavigationCanvas.SetCanvasDimensions(Window.Width, NavigationCanvasHeight);
             loggedinNavigationCanvas.Show();
+            currentNavigationCanvas = loggedinNavigationCanvas;
         }
 
         public void LogoImage_MouseLeftButtonDown(object sender, RoutedEventArgs args)
@@ -230,6 +233,12 @@ namespace Trivago
             }
             Front_End.NavigationCanvas.GetInstance(NavigationCanvas).Hide();
             InitializeLoggedinNavigationCanvas(user);
+        }
+
+        public void HelloLabel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            User user = ((LoggedinNavigationCanvas)currentNavigationCanvas).GetActiveUser();
+            
         }
     }
 }

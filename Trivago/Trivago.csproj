@@ -66,6 +66,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Front-End\BookingsListShow.cs" />
     <Compile Include="Front-End\CustomCanvas.cs" />
     <Compile Include="Front-End\FrontEndHelper.cs" />
     <Compile Include="Front-End\HomeCanvas.cs" />

@@ -16,6 +16,11 @@ namespace Trivago.Front_End
         private static LoggedinNavigationCanvas loggedinNavigationCanvas;
         private User user;
 
+        public User GetActiveUser()
+        {
+            return user;
+        }
+
         public static LoggedinNavigationCanvas GetInstance(Canvas canvas, User user)
         {
             if (loggedinNavigationCanvas == null)
@@ -67,6 +72,7 @@ namespace Trivago.Front_End
                 Content = "Hello " + user.username,
                 FontSize = 22
             };
+            helloLabel.MouseLeftButtonDown += FrontEndHelper.GetMainWindow().HelloLabel_MouseLeftButtonDown;
             Canvas.SetRight(helloLabel, 0.05 * canvas.Width);
             Canvas.SetTop(helloLabel, 0.3 * canvas.Height);
             canvas.Children.Add(helloLabel);

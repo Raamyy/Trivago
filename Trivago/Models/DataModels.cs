@@ -415,6 +415,35 @@ namespace Trivago.Models
             return null;
         }
 
+        private RoomType GetRoomType(int licenseNumber, int roomNumber)
+        {
+            /// <summary>
+            /// *** NOT USED ***
+            /// Gets RoomType object based on hotel and room numbers.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT Room.room_type, Room_Type.maximum_guests
+                                    FROM Room, Room_Type
+                                    WHERE Room.room_number = :roomNumber
+                                    AND Room.hotel_license_number = :hotelNumber
+                                    AND Room_Type.type_name = Room.room_type";
+            command.Parameters.Add("roomNumber", roomNumber);
+            command.Parameters.Add("hotelNumber", licenseNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            RoomType type = null;
+            while (reader.Read())
+            {
+                type = new RoomType(reader["room_type"].ToString(), 
+                    Int32.Parse(reader["maximum_guests"].ToString()));
+                return type;
+            }
+            return type;
+        }
+
         public List<Booking> GetRoomBookings(Room room)
         {
             command = new OracleCommand();
@@ -625,9 +654,12 @@ namespace Trivago.Models
             return bookings;
         }
 
-        // returns list of pair website data and it's price for a specific room SORTED ascending according to price
         public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
         {
+            /// <summary>
+            /// Gets a pair list of website and it's price for a specific room,
+            /// SORTED ascendingly according to price.
+            /// </summary>
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -732,11 +764,35 @@ namespace Trivago.Models
             {
                 reviews.Add(
                     new Review(reader["description"].ToString(),
-                                int.Parse(reader["rating"].ToString()),
-                                int.Parse(reader["booking_number"].ToString()))
-                                );
+                               int.Parse(reader["rating"].ToString()),
+                               int.Parse(reader["booking_number"].ToString()))
+                );
             }
             return reviews;
+        }
+
+        /* 
+         * Disconnected Mode
+         */
+        public List<Room> GetWebsiteRooms(Website website)
+        {
+            /// <summary>
+            /// Get all rooms linked to a website.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter(
+                $"SELECT * FROM Room_Price WHERE website_name = '{website.name}'", oracleConnectionString);
+            DataSet dataset = new DataSet();
+            adapter.Fill(dataset);
+
+            List<Room> rooms = new List<Room>();
+            DataRow[] rows = dataset.Tables[0].Select();
+            foreach (DataRow row in rows)
+            {
+                Room newRoom = GetRoom(Int32.Parse(row["license_number"].ToString()), 
+                    Int32.Parse(row["room_number"].ToString()));
+                rooms.Add(newRoom);
+            }
+            return rooms;
         }
 
         /*
@@ -1037,6 +1093,82 @@ namespace Trivago.Models
                 return false;
             }
             return true;
+        }
+
+        public bool RegisterUser(User user, string password)
+        {
+            /// <summary>
+            /// Adds a user object to the database.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"INSERT INTO Credit_Card
+                                    (credit_card_number, cvv, expiration_date)
+                                    VALUES (:serialN, :cvv, :eDate)";
+            command.Parameters.Add("serialN", user.userCreditCard.cardSerial);
+            command.Parameters.Add("cvv", user.userCreditCard.cvv);
+            command.Parameters.Add("eDate", user.userCreditCard.expirationDate);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            command.Parameters.Clear();
+            command.CommandText = @"INSERT INTO Website_User
+                                    (user_name, email, name, password, user_category, credit_card_number)
+                                    VALUES (:userName,
+                                            :userEmail,
+                                            :name,
+                                            :pswd,
+                                            :category,
+                                            :serial)";
+            command.Parameters.Add("userName", user.username);
+            command.Parameters.Add("userEmail", user.email);
+            command.Parameters.Add("name", user.name);
+            command.Parameters.Add("pswd", PasswordHasher.Hash(password));
+            command.Parameters.Add("category", "Basic");
+            command.Parameters.Add("serial", user.userCreditCard.cardSerial);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public User LogUser(string userName, string password)
+        {
+            /// <summary>
+            /// Checks if user is registered and password is valid.
+            /// <returns>
+            /// User object if user is valid.
+            /// </returns>
+            /// <returns>
+            /// null if user isn't found or password is invalid.
+            /// </returns>
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"SELECT user_name, password
+                                    FROM Website_User
+                                    WHERE user_name = '{userName}'";
+            OracleDataReader reader = command.ExecuteReader();
+            if (reader.HasRows == false)
+                return null;
+            if (!PasswordHasher.Verify(password, reader["password"].ToString()))
+                return null;
+
+            return GetUser(userName);
         }
     }
 }
