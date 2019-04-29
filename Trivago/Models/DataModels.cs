@@ -989,7 +989,12 @@ namespace Trivago.Models
 
         public bool AddBooking(Booking booking)
         {
-            // TODO: Add Define booking
+            /// <summary>
+            /// Adds a booking to the database and adds the associating Define_Booking object.
+            /// </summary>
+            if (!IsRoomAvailable(booking.bookingRoom, booking.startDate, booking.endDate))
+                return false;
+
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -1006,19 +1011,29 @@ namespace Trivago.Models
             command.Parameters.Add("userName", booking.bookingUser.username);
             command.Parameters.Add("mealPlan", booking.bookingMealPlan.name);
             command.Parameters.Add("licenseNumber", booking.bookingRoom.hotel.licenseNumber);
-            string s = booking.number.ToString() + " ";
-            s += booking.numberOfGuests.ToString() + " ";
-            s += booking.bookingUser.name + " ";
-            s += booking.bookingMealPlan.name + " ";
-            s += booking.bookingRoom.hotel.licenseNumber;
-            MessageBox.Show(s);
             try
             {
                 command.ExecuteNonQuery();
             }
-            catch (OracleException e)
+            catch (OracleException)
             {
-                MessageBox.Show(e.ToString());
+                return false;
+            }
+
+            command.CommandText = @"INSERT INTO Define_Booking
+                                    (website_name, hotel_license_number, room_number, booking_number)
+                                    VALUES (:websiteName, :hn, :rn, :bn)";
+            command.Parameters.Clear();
+            command.Parameters.Add("websiteName", booking.bookingWebsite.name);
+            command.Parameters.Add("hn", booking.bookingRoom.hotel.licenseNumber);
+            command.Parameters.Add("rn", booking.bookingRoom.number);
+            command.Parameters.Add("bn", booking.number);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            { 
                 return false;
             }
             return true;
