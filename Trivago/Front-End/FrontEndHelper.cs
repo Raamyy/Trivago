@@ -18,12 +18,26 @@ namespace Trivago.Front_End
                 Width = width,
                 Height = height,
                 Content = content,
-                Background = new SolidColorBrush(Color.FromRgb(232, 126, 49)),
+                Background = new SolidColorBrush(Color.FromRgb(0, 127, 175)),
                 Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
                 FontSize = 20,
                 Cursor = Cursors.Hand
             };
+            obj.MouseEnter += button_MouseEnter;
+            obj.MouseLeave += button_MouseLeave;
             return obj;
+        }
+
+        private static void button_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Button button = (Button)sender;
+            button.Background = new SolidColorBrush(Color.FromRgb(0, 127, 175));
+        }
+
+        private static void button_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Button button = (Button)sender;
+            button.Background = new SolidColorBrush(Color.FromRgb(0, 95, 127));
         }
 
         public static Trivago.MainWindow GetMainWindow()
