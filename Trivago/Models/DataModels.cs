@@ -829,10 +829,12 @@ namespace Trivago.Models
 
         public bool AddBooking(Booking booking)
         {
-            if (!IsRoomAvailable(booking.bookingRoom, booking.startDate.AddMonths(1), booking.endDate.AddMonths(1)))
+            /// <summary>
+            /// Adds a booking to the database and adds the associating Define_Booking object.
+            /// </summary>
+            if (!IsRoomAvailable(booking.bookingRoom, booking.startDate, booking.endDate))
                 return false;
 
-            // TODO: Add Define booking
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -853,9 +855,8 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (OracleException e)
+            catch (OracleException)
             {
-                MessageBox.Show(e.ToString());
                 return false;
             }
 
@@ -871,10 +872,8 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (OracleException e)
-            {
-                MessageBox.Show("asd "+booking.bookingWebsite.name+"\n"+booking.bookingRoom.number+"\n"
-                    +booking.number+"\n"+booking.bookingRoom.hotel.licenseNumber+ e.ToString());
+            catch (OracleException)
+            { 
                 return false;
             }
             return true;
