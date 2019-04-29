@@ -1094,5 +1094,81 @@ namespace Trivago.Models
             }
             return true;
         }
+
+        public bool RegisterUser(User user, string password)
+        {
+            /// <summary>
+            /// Adds a user object to the database.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"INSERT INTO Credit_Card
+                                    (credit_card_number, cvv, expiration_date)
+                                    VALUES (:serialN, :cvv, :eDate)";
+            command.Parameters.Add("serialN", user.userCreditCard.cardSerial);
+            command.Parameters.Add("cvv", user.userCreditCard.cvv);
+            command.Parameters.Add("eDate", user.userCreditCard.expirationDate);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            command.Parameters.Clear();
+            command.CommandText = @"INSERT INTO Website_User
+                                    (user_name, email, name, password, user_category, credit_card_number)
+                                    VALUES (:userName,
+                                            :userEmail,
+                                            :name,
+                                            :pswd,
+                                            :category,
+                                            :serial)";
+            command.Parameters.Add("userName", user.username);
+            command.Parameters.Add("userEmail", user.email);
+            command.Parameters.Add("name", user.name);
+            command.Parameters.Add("pswd", PasswordHasher.Hash(password));
+            command.Parameters.Add("category", "Basic");
+            command.Parameters.Add("serial", user.userCreditCard.cardSerial);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public User LogUser(string userName, string password)
+        {
+            /// <summary>
+            /// Checks if user is registered and password is valid.
+            /// <returns>
+            /// User object if user is valid.
+            /// </returns>
+            /// <returns>
+            /// null if user isn't found or password is invalid.
+            /// </returns>
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"SELECT user_name, password
+                                    FROM Website_User
+                                    WHERE user_name = '{userName}'";
+            OracleDataReader reader = command.ExecuteReader();
+            if (reader.HasRows == false)
+                return null;
+            if (!PasswordHasher.Verify(password, reader["password"].ToString()))
+                return null;
+
+            return GetUser(userName);
+        }
     }
 }
