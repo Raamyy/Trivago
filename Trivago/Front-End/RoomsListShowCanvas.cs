@@ -121,7 +121,7 @@ namespace Trivago.Front_End
                 };
                 roomDataStackPanel.Children.Add(roomPriceLabel);
 
-                //set view more button
+                //set view more button and location
                 Grid grid = new Grid
                 {
                     ColumnDefinitions =
@@ -131,7 +131,7 @@ namespace Trivago.Front_End
                     },
                     Margin = new Thickness(0, 0.05 * cardHeight, 0, 0)
                 };
-
+                
                 Label locationLabel = new Label
                 {
                     Content = "Loaction: " + room.hotel.location.city + ", " + room.hotel.location.country,
@@ -141,7 +141,6 @@ namespace Trivago.Front_End
                 grid.Children.Add(locationLabel);
 
                 Button viewMoreButton = FrontEndHelper.CreateButton(cardWidth * 0.1, cardHeight * 0.1, "Reserve");
-                
                 Grid.SetColumn(viewMoreButton, 1);
                 grid.Children.Add(viewMoreButton);
                 roomDataStackPanel.Children.Add(grid);

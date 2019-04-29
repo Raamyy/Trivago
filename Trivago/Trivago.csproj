@@ -70,14 +70,18 @@
     <Compile Include="Front-End\FrontEndHelper.cs" />
     <Compile Include="Front-End\HomeCanvas.cs" />
     <Compile Include="Front-End\ImageAlbum.cs" />
+    <Compile Include="Front-End\LoggedinNavigationCanvas.cs" />
+    <Compile Include="Front-End\LoginCanvas.cs" />
     <Compile Include="Front-End\NavigationCanvas.cs" />
     <Compile Include="Front-End\RoomsListShowCanvas.cs" />
+    <Compile Include="Front-End\SignupCanvas.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\BackEndHelper.cs" />
     <Compile Include="Models\Booking.cs" />
     <Compile Include="Models\CreditCard.cs" />
     <Compile Include="Front-End\CustomImage.cs" />

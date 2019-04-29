@@ -70,5 +70,14 @@
         <Canvas x:Name= "RoomsListShowCanvas">
             
         </Canvas>
+        <Canvas x:Name="LoginCanvas">
+            
+        </Canvas>
+        <Canvas x:Name="SignupCanvas">
+            
+        </Canvas>
+        <Canvas x:Name="LoggedinNavigationCanvas">
+            
+        </Canvas>
     </Canvas>
 </Window>
