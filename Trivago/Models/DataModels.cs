@@ -418,6 +418,7 @@ namespace Trivago.Models
         private RoomType GetRoomType(int licenseNumber, int roomNumber)
         {
             /// <summary>
+            /// *** NOT USED ***
             /// Gets RoomType object based on hotel and room numbers.
             /// </summary>
             command = new OracleCommand();
@@ -653,9 +654,12 @@ namespace Trivago.Models
             return bookings;
         }
 
-        // returns list of pair website data and it's price for a specific room SORTED ascending according to price
         public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
         {
+            /// <summary>
+            /// Gets a pair list of website and it's price for a specific room,
+            /// SORTED ascendingly according to price.
+            /// </summary>
             command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -784,20 +788,10 @@ namespace Trivago.Models
             DataRow[] rows = dataset.Tables[0].Select();
             foreach (DataRow row in rows)
             {
-                // TODO: Put an actual image
-                Room newRoom = new Room(
-                    Int32.Parse(row["room_number"].ToString()),
-                    GetHotel(Int32.Parse(row["license_number"].ToString())),
-                    GetRoomType(Int32.Parse(row["license_number"].ToString()),
-                                Int32.Parse(row["room_number"].ToString())),
-                    new CustomImage(new byte[0]),
-                    GetViews(Int32.Parse(row["license_number"].ToString()),
-                                        Int32.Parse(row["room_number"].ToString()))
-                    );
+                Room newRoom = GetRoom(Int32.Parse(row["license_number"].ToString()), 
+                    Int32.Parse(row["room_number"].ToString()));
                 rooms.Add(newRoom);
-                MessageBox.Show(row["room_number"].ToString() + " "+ newRoom.number.ToString());
             }
-
             return rooms;
         }
 
