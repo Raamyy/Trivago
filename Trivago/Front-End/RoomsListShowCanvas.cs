@@ -249,22 +249,24 @@ namespace Trivago.Front_End
                 roomReviewsTab.Content = roomReviewsStackPanel;
                 MoreDetailsTabs.Items.Add(roomReviewsTab);
 
-                List<Booking> roomBookings = new List<Booking>();
-                foreach(Booking booking in roomBookings)
+                List<Booking> roomBookings = DataModels.GetInstance().GetRoomBookings(room);
+                for (int j = 0; j < roomBookings.Count; j++)
                 {
+                    Booking booking = roomBookings[j];
                     Border roomBookingCardBorder = new Border
                     {
-                        Width = cardWidth,
+                        Width = 0.8 * cardWidth,
                         BorderBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0)),
                         BorderThickness = new Thickness(3),
-                        Margin = new Thickness(0.1 * cardWidth, 25, 0.1 * cardWidth, 0)
+                        HorizontalAlignment = HorizontalAlignment.Left
                     };
-                    StackPanel roomBookingCardPanel = new StackPanel
-                    {
-                        Width = 0.8 * cardWidth
-                    };
+                    if (j == roomBookings.Count - 1)
+                        roomBookingCardBorder.Margin = new Thickness(0.1 * cardWidth, 25, 0.1 * cardWidth, 25);
+                    else
+                        roomBookingCardBorder.Margin = new Thickness(0.1 * cardWidth, 25, 0.1 * cardWidth, 0);
+                    StackPanel roomBookingCardPanel = new StackPanel();
                     roomBookingCardBorder.Child = roomBookingCardPanel;
-                    roomReviewsStackPanel.Children.Add(roomBookingCardPanel);
+                    roomReviewsStackPanel.Children.Add(roomBookingCardBorder);
 
                     Label userNameLabel = new Label
                     {
@@ -280,10 +282,21 @@ namespace Trivago.Front_End
                     };
                     roomBookingCardPanel.Children.Add(ratingLabel);
 
+                    Label startDateLabel = new Label
+                    {
+                        Content = "From " + booking.startDate.ToShortDateString() + " To " + booking.endDate.ToShortDateString(),
+                        FontSize = 22
+                    };
+                    roomBookingCardPanel.Children.Add(startDateLabel);
+
                     TextBlock description = new TextBlock
                     {
-                        Width = cardWidth,
-                        Text = "Description : " + booking.bookingReview.description
+                        Width = 0.8 * cardWidth - 5,
+                        Text = "Description : " + booking.bookingReview.description,
+                        FontSize = 22,
+                        Margin = new Thickness(0, 0, 0, 10),
+                        TextWrapping = TextWrapping.WrapWithOverflow,
+                        Padding = new Thickness(5, 0, 0, 0)
                     };
                     roomBookingCardPanel.Children.Add(description);
                 }

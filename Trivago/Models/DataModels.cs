@@ -73,6 +73,65 @@ namespace Trivago.Models
             return roomTypes;
         }
 
+        public List<Room> GetAllRooms()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM room";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Room> rooms = new List<Room>();
+            while (reader.Read())
+            {
+                int hotelNumber = int.Parse(reader["hotel_license_number"].ToString());
+                Hotel hotel = GetHotel(hotelNumber);
+                int roomNumber = int.Parse(reader["room_number"].ToString());
+                List<RoomView> views = GetViews(roomNumber, hotelNumber);
+                byte[] image = (byte[])reader["room_image"];
+                string _roomType = reader["room_type"].ToString();
+                RoomType roomType = GetRoomType(_roomType);
+
+                rooms.Add(new Room(roomNumber,
+                                hotel,
+                                roomType,
+                                new CustomImage(image),
+                                views));
+            }
+            return rooms;
+        }
+
+        public List<Hotel> GetAllHotels()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM hotel";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Hotel> hotels = new List<Hotel>();
+            while (reader.Read())
+            {
+                int licenseNumber = int.Parse(reader["license_number"].ToString());
+                String hotelName = reader["hotel_name"].ToString();
+                byte[] image = (byte[])reader["hotel_image"];
+                String country = reader["country"].ToString();
+                String city = reader["city"].ToString();
+                Location location = GetLocation(country, city);
+                List<HotelFacility> facilities = GetFacilities(licenseNumber);
+                List<MealPlan> meals = GetMealPlans(licenseNumber);
+
+                Hotel hotel = new Hotel(licenseNumber, hotelName, new CustomImage(image),
+                    location, facilities, meals);
+                hotels.Add(hotel);
+            }
+            return hotels;
+        }
+
         public Hotel GetHotel(int licenseNumber)
         {
             command = new OracleCommand();
@@ -181,7 +240,7 @@ namespace Trivago.Models
 
             try
             {
-            command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
             }
             catch
             {
@@ -190,7 +249,7 @@ namespace Trivago.Models
 
             return new Review(command.Parameters["Description_out"].Value.ToString(),
                               int.Parse(command.Parameters["Rating_out"].Value.ToString()),
-                              bookingNumber);            
+                              bookingNumber);
         }
 
         public Room GetRoom(int hotelLicenceNumber, int roomNumber)
@@ -354,6 +413,50 @@ namespace Trivago.Models
                 return new RoomType(typeName, int.Parse(reader[0].ToString()));
             }
             return null;
+        }
+
+        public List<Booking> GetRoomBookings(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"select booking.*, website_name
+                                    FROM booking, define_booking
+                                    Where room_number = :room
+                                    AND hotel_license_number = :hotel";
+
+            command.Parameters.Add("room", room.number);
+            command.Parameters.Add("hotel", room.hotel.licenseNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Booking> bookings = new List<Booking>();
+            while (reader.Read())
+            {
+                DateTime startDate = (DateTime)reader["start_date"];
+                DateTime endDate = (DateTime)reader["end_date"];
+                int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
+                User bookingUser = GetUser(reader["user_name"].ToString());
+                int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
+                MealPlan bookingMealPlan = GetMealPlan(hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
+                int bookingNumber = int.Parse(reader["booking_number"].ToString());
+                Review review = GetReview(bookingNumber);
+                Website website = GetWebsite(reader["website_name"].ToString());
+
+                Booking booking = new Booking(
+                        bookingNumber,
+                        startDate,
+                        endDate,
+                        numberOfGuests,
+                        bookingUser,
+                        bookingMealPlan,
+                        room,
+                        review,
+                        website
+                    );
+                bookings.Add(booking);
+            }
+            return bookings;
         }
 
         public List<HotelFacility> GetFacilities(int hotelLicense)
@@ -522,7 +625,7 @@ namespace Trivago.Models
             return bookings;
         }
 
-        // returns list of pair website data and it's price for a specific room
+        // returns list of pair website data and it's price for a specific room SORTED ascending according to price
         public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
         {
             command = new OracleCommand();
@@ -544,6 +647,7 @@ namespace Trivago.Models
                 int price = int.Parse(reader["price"].ToString());
                 websitesPrices.Add(new Tuple<Website, int>(website, price));
             }
+            websitesPrices.Sort((x, y) => x.Item2.CompareTo(y.Item2));
             return websitesPrices;
         }
 
