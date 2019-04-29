@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Oracle.DataAccess.Client;
 using System.Data;
 using Trivago.Front_End;
+using System.Windows;
+using System.Globalization;
+using Oracle.DataAccess.Types;
 
 namespace Trivago.Models
 {
@@ -59,13 +62,13 @@ namespace Trivago.Models
                                     FROM room_type";
 
             OracleDataReader reader = command.ExecuteReader();
-            List<RoomType> roomTypes= new List<RoomType>();
+            List<RoomType> roomTypes = new List<RoomType>();
             while (reader.Read())
             {
                 string name = reader["type_name"].ToString();
-                int maxGuests =int.Parse(reader["maximum_guests"].ToString());
-                
-                roomTypes.Add(new RoomType(name,maxGuests));
+                int maxGuests = int.Parse(reader["maximum_guests"].ToString());
+
+                roomTypes.Add(new RoomType(name, maxGuests));
             }
             return roomTypes;
         }
@@ -120,12 +123,12 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                DateTime startDate =(DateTime) reader["start_date"];
-                DateTime endDate =(DateTime) reader["end_date"];
+                DateTime startDate = (DateTime)reader["start_date"];
+                DateTime endDate = (DateTime)reader["end_date"];
                 int numberOfGuests = int.Parse(reader["number_of_guests"].ToString());
                 User bookingUser = GetUser(reader["user_name"].ToString());
                 int hotelLicenceNumber = int.Parse(reader["licence_number"].ToString());
-                MealPlan bookingMealPlan = GetMealPlan( hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
+                MealPlan bookingMealPlan = GetMealPlan(hotelLicenceNumber, reader["meal_plan"].ToString()); //Hotel and plan name defines the meal plan
                 Room room = GetRoom(hotelLicenceNumber, int.Parse(reader["room_number"].ToString()));
                 Review review = GetReview(bookingNumber);
                 Website website = GetWebsite(reader["website_name"].ToString());
@@ -165,26 +168,32 @@ namespace Trivago.Models
             return null;
         }
 
-        private Review GetReview(int bookingNumber)
+        public Review GetReview(int bookingNumber)
         {
             command = new OracleCommand();
             command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            command.CommandType = CommandType.StoredProcedure;
 
-            command.CommandText = @"SELECT *
-                                    FROM review
-                                    WHERE booking_number = :bookingNum";
-            command.Parameters.Add("bookingNum", bookingNumber);
+            command.CommandText = "Get_Review";
+            command.Parameters.Add("booking_number_in", bookingNumber);
+            command.Parameters.Add("Description_out", OracleDbType.Varchar2, 100).Direction = ParameterDirection.Output;
+            command.Parameters.Add("Rating_out", OracleDbType.Int32, ParameterDirection.Output);
 
-            OracleDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                return new Review(reader["description"].ToString(), int.Parse(reader["rating"].ToString()));
+            command.ExecuteNonQuery();
             }
-            return null;
+            catch
+            {
+                return null;
+            }
+
+            return new Review(command.Parameters["Description_out"].Value.ToString(),
+                              int.Parse(command.Parameters["Rating_out"].Value.ToString()),
+                              bookingNumber);            
         }
 
-        private Room GetRoom(int hotelLicenceNumber, int roomNumber)
+        public Room GetRoom(int hotelLicenceNumber, int roomNumber)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -224,7 +233,7 @@ namespace Trivago.Models
                                     FROM meal_plan
                                     WHERE name = :mealName
                                     AND hotel_license_number = :hotelNumber";
-                                    
+
             command.Parameters.Add("mealName", mealPlanName);
             command.Parameters.Add("hotelNumber", hotelLicenceNumber);
 
@@ -258,7 +267,7 @@ namespace Trivago.Models
                 string name = reader["name"].ToString();
                 UserCategory category = GetUserCategory(reader["user_category"].ToString());
                 CreditCard creditCard = GetCreditCard(reader["credit_card_number"].ToString());
-                                        
+
                 user = new User(userName, email, name, category, creditCard);
             }
             reader.Close();
@@ -296,7 +305,7 @@ namespace Trivago.Models
                                     FROM user_category
                                     WHERE name = :categoryName";
             command.Parameters.Add("categoryName", categoryName);
-            
+
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
@@ -342,7 +351,7 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                return new RoomType(typeName,int.Parse(reader[0].ToString()));
+                return new RoomType(typeName, int.Parse(reader[0].ToString()));
             }
             return null;
         }
@@ -387,8 +396,8 @@ namespace Trivago.Models
             while (reader.Read())
             {
                 string name = reader["name"].ToString();
-                String price =reader["price"].ToString();
-                MealPlan plan = new MealPlan(name,(int.Parse(price)));
+                String price = reader["price"].ToString();
+                MealPlan plan = new MealPlan(name, (int.Parse(price)));
                 plans.Add(plan);
             }
             return plans;
@@ -415,7 +424,7 @@ namespace Trivago.Models
             while (reader.Read())
             {
                 String name = reader["place_of_intrest"].ToString();
-                byte[] placeImage = (byte[]) reader["place_image"];
+                byte[] placeImage = (byte[])reader["place_image"];
                 PlaceOfIntrest place = new PlaceOfIntrest(name, new CustomImage(placeImage));
                 places.Add(place);
             }
@@ -476,7 +485,7 @@ namespace Trivago.Models
                 while (reader.Read())
                 {
                     // Build the room object with the dependant objects
-                    
+
                     Hotel hotel = GetHotel(Int32.Parse(reader["license_number"].ToString()));
                     int roomNumber = Int32.Parse(reader["room_number"].ToString());
 
@@ -513,10 +522,35 @@ namespace Trivago.Models
             return bookings;
         }
 
-        // Helper Functions
+        // returns list of pair website data and it's price for a specific room
+        public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT website_name, price
+                                    from room_price
+                                     where room_number = :room
+                                     and license_number = :hotel";
+            command.Parameters.Add("room", room.number);
+            command.Parameters.Add("hotel", room.hotel.licenseNumber);
+
+            List<Tuple<Website, int>> websitesPrices = new List<Tuple<Website, int>>();
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Website website = GetWebsite(reader["website_name"].ToString());
+                int price = int.Parse(reader["price"].ToString());
+                websitesPrices.Add(new Tuple<Website, int>(website, price));
+            }
+            return websitesPrices;
+        }
+
         bool IsRoomAvailable(Room room, DateTime startDate, DateTime endDate)
         {
             /// <summary>
+            /// Helper Function.
             /// Checks if the given room is free to book within the give dates.
             /// </summary>
             command = new OracleCommand();
@@ -549,11 +583,63 @@ namespace Trivago.Models
             return true;
         }
 
+        public List<Review> GetRoomReviews(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+
+            int roomNumber = room.number;
+            int hotelNumber = room.hotel.licenseNumber;
+            command.CommandText = "Get_Room_Reviews";
+            command.Parameters.Add("room_number", roomNumber);
+            command.Parameters.Add("hotel_number", hotelNumber);
+            command.Parameters.Add("reviews", OracleDbType.RefCursor, ParameterDirection.Output);
+            OracleDataReader reader = command.ExecuteReader();
+
+            List<Review> reviews = new List<Review>();
+            while (reader.Read())
+            {
+                Review review = new Review(reader["description"].ToString(),
+                    Int32.Parse(reader["rating"].ToString()), Int32.Parse(reader["booking_number"].ToString()));
+                reviews.Add(review);
+            }
+
+            return reviews;
+        }
+
+        public List<Review> GetHotelReviews(Hotel hotel)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM Review
+                                    WHERE booking_number in (
+                                      SELECT booking_number
+                                      FROM Define_Booking
+                                      WHERE hotel_license_number = :hotel);";
+            command.Parameters.Add("hotelNumber", hotel.licenseNumber);
+
+            List<Review> reviews = new List<Review>();
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                reviews.Add(
+                    new Review(reader["description"].ToString(),
+                                int.Parse(reader["rating"].ToString()),
+                                int.Parse(reader["booking_number"].ToString()))
+                                );
+            }
+            return reviews;
+        }
+
         /*
          * Insertion to database methods.
          */
 
-        public void AddImage()
+        public bool AddImage()
         {
             /// <summary>
             /// Arbitrary method used for populating the database.
@@ -565,10 +651,18 @@ namespace Trivago.Models
             CustomImage image = new CustomImage("C:\\Users\\ahmed\\Pictures\\Screenshots\\Screenshot (2).png");
             command.CommandText = $"UPDATE Room SET Room_Image = :image";
             command.Parameters.Add("image", image.GetByteImage());
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public void AddHotel(Hotel hotel)
+        public bool AddHotel(Hotel hotel)
         {
             /// <summary>
             /// Writes a Hotel object to the database,
@@ -587,14 +681,24 @@ namespace Trivago.Models
             command.Parameters.Add("hotelImage", hotel.image.GetByteImage());
             command.Parameters.Add("city", hotel.location.city);
             command.Parameters.Add("country", hotel.location.country);
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
 
             // Add Hotel facilities and meal plans (referencing Hotel)
-            AddFacilities(hotel.licenseNumber, hotel.facilities);
-            AddMealPlans(hotel.licenseNumber, hotel.mealPlans);
+            if (AddFacilities(hotel.licenseNumber, hotel.facilities) &
+                AddMealPlans(hotel.licenseNumber, hotel.mealPlans))
+                return true;
+            else
+                return false;
         }
 
-        private void AddFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
+        private bool AddFacilities(int hotelLicenseNumber, List<HotelFacility> facilities)
         {
             foreach (HotelFacility facility in facilities)
             {
@@ -608,11 +712,23 @@ namespace Trivago.Models
                 command.Parameters.Add("hotelNumber", hotelLicenseNumber);
                 command.Parameters.Add("facilityName", facility.name);
                 command.Parameters.Add("facilityImage", facility.image.GetByteImage());
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (OracleException)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        private void AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
+        private bool AddMealPlans(int hotelLicenseNumber, List<MealPlan> meals)
         {
+            /// <summary>
+            /// Adds hotels meals to database.
+            /// </summary>
             foreach (MealPlan plan in meals)
             {
                 command = new OracleCommand();
@@ -625,11 +741,19 @@ namespace Trivago.Models
                 command.Parameters.Add("name", plan.name);
                 command.Parameters.Add("hotelNumber", hotelLicenseNumber);
                 command.Parameters.Add("price", plan.price);
-                command.ExecuteNonQuery();
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (OracleException)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        public void AddLocation(Location location)
+        public bool AddLocation(Location location)
         {
             command = new OracleCommand();
             command.Connection = connection;
@@ -641,13 +765,23 @@ namespace Trivago.Models
                                     VALUES (:country, :city);";
             command.Parameters.Add("country", location.country);
             command.Parameters.Add("city", location.city);
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
 
             // Add location's places of interest.
-            AddPlacesOfInterest(location.placesOfIntrest);
+            if (AddPlacesOfInterest(location.placesOfIntrest))
+                return true;
+            else
+                return false;
         }
 
-        private void AddPlacesOfInterest(List<PlaceOfIntrest> places)
+        private bool AddPlacesOfInterest(List<PlaceOfIntrest> places)
         {
             foreach (PlaceOfIntrest place in places)
             {
@@ -663,8 +797,127 @@ namespace Trivago.Models
                 command.Parameters.Add("city", place.city);
                 command.Parameters.Add("place_of_interest", place.name);
                 command.Parameters.Add("image", place.image.GetByteImage());
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (OracleException)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public bool AddReview(Review review)
+        {
+            /// <summary>
+            /// Writes a Review object to the database.
+            /// Done using an oracle stored procedure.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+
+            // Add location object
+            command.CommandText = "Add_Review";
+            command.Parameters.Add("description", review.description);
+            command.Parameters.Add("rating", review.rating);
+            command.Parameters.Add("booking_number", review.bookingNumber);
+
+            try
+            {
                 command.ExecuteNonQuery();
             }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddWebsite(Website website)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Website
+                                    (name, rating)
+                                    VALUES (:name, :rating)";
+            command.Parameters.Add("name", website.name);
+            command.Parameters.Add("rating", website.rating);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddRoom(Room room)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Room
+                                    (room_number, hotel_liscence_number, room_type, room_image)
+                                    VALUES (:roomNumber, hoteNumber, roomType, roomImage)";
+            command.Parameters.Add("roomNUmber", room.number);
+            command.Parameters.Add("hotelNumber", room.hotel.licenseNumber);
+            command.Parameters.Add("roomType", room.type.name);
+            command.Parameters.Add("roomImage", room.image.GetByteImage());
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool AddBooking(Booking booking)
+        {
+            // TODO: Add Define booking
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"INSERT INTO Booking
+                                    (booking_number, start_date, end_date, number_of_guests, user_name,
+                                        meal_plan, LICENCE_NUMBER)
+                                    VALUES (:bookingNumber, :sDate, :eDate, :guests, :userName,
+                                    :mealPlan, :licenseNumber)";
+            command.Parameters.Add("bookingNumber", booking.number);
+            command.Parameters.Add("sDate", (OracleDate)booking.startDate);
+            command.Parameters.Add("eDate", (OracleDate)booking.endDate);
+            command.Parameters.Add("guests", booking.numberOfGuests);
+            command.Parameters.Add("userName", booking.bookingUser.username);
+            command.Parameters.Add("mealPlan", booking.bookingMealPlan.name);
+            command.Parameters.Add("licenseNumber", booking.bookingRoom.hotel.licenseNumber);
+            string s = booking.number.ToString() + " ";
+            s += booking.numberOfGuests.ToString() + " ";
+            s += booking.bookingUser.name + " ";
+            s += booking.bookingMealPlan.name + " ";
+            s += booking.bookingRoom.hotel.licenseNumber;
+            MessageBox.Show(s);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
+                return false;
+            }
+            return true;
         }
     }
 }

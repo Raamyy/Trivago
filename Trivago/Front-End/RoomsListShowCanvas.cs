@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,7 +11,8 @@ namespace Trivago.Front_End
     {
         private static RoomsListShowCanvas roomsListShowCanvas;
         private List<Room> rooms;
-        private List<MealPlan> mealPlans;
+        private List<MealPlan> selectedMealPlan;
+        private List<Tuple<Website, int>> selectedWebsitePrice;
 
         private RoomsListShowCanvas(Canvas canvas) : base(canvas)
         {
@@ -27,8 +29,8 @@ namespace Trivago.Front_End
 
         public override void Initialize()
         {
-            mealPlans = new List<MealPlan>(new MealPlan[rooms.Count]);
-
+            selectedMealPlan = new List<MealPlan>(new MealPlan[rooms.Count]);
+            selectedWebsitePrice = new List<Tuple<Website, int>>(new Tuple<Website, int>[rooms.Count]);
             int boxSpacing = 50;
             double cardWidth = canvas.Width - 0.2 * canvas.Width;
             double cardHeight = 0.7 * canvas.Height;
@@ -79,7 +81,7 @@ namespace Trivago.Front_End
                 Grid.SetColumn(roomImage, 0);
                 Grid.SetRow(roomImage, 0);
                 roomGrid.Children.Add(roomImage);
-                
+
                 //set roomdatastackpanel
                 StackPanel roomDataStackPanel = new StackPanel
                 {
@@ -98,7 +100,7 @@ namespace Trivago.Front_End
                     Margin = new Thickness(0, 0.2 * cardHeight, 0, 0)
                 };
                 roomDataStackPanel.Children.Add(roomTypeLabel);
-                
+
                 //set hotel name
                 Label roomHotelLabel = new Label
                 {
@@ -147,18 +149,22 @@ namespace Trivago.Front_End
                 grid.Children.Add(viewMoreButton);
                 roomDataStackPanel.Children.Add(grid);
 
+                //creates view more expander
                 Expander viewMoreExpander = new Expander
                 {
                     Width = canvas.Width,
-                    Margin = new Thickness(0, 0, 0, 0.05 * cardHeight)
+                    Margin = new Thickness(0, 0, 0, 0.05 * cardHeight),
+                    Header = "More Data"
                 };
                 Grid.SetColumnSpan(viewMoreExpander, 2);
                 Grid.SetRow(viewMoreExpander, 1);
                 roomGrid.Children.Add(viewMoreExpander);
 
+                //creates tabs
                 TabControl MoreDetailsTabs = new TabControl();
                 viewMoreExpander.Content = MoreDetailsTabs;
 
+                //creates meals tab
                 TabItem MealsTab = new TabItem { Header = "Meals" };
                 StackPanel MealsPanel = new StackPanel();
                 MealsTab.Content = MealsPanel;
@@ -169,7 +175,7 @@ namespace Trivago.Front_End
                     MealPlan mealPlan = room.hotel.mealPlans[j];
                     RadioButton mealPlanRadioButton = new RadioButton
                     {
-                        GroupName = i.ToString(),
+                        GroupName = "MealPlanRadioGroup " + i.ToString(),
                         Content = mealPlan,
                         FontSize = 22,
                         Margin = new Thickness(0, 0.025 * cardHeight, 0, 0)
@@ -179,14 +185,125 @@ namespace Trivago.Front_End
                         mealPlanRadioButton.IsChecked = true;
                     MealsPanel.Children.Add(mealPlanRadioButton);
                 }
+
+                //creates website and prices tab
+                TabItem websitesTab = new TabItem { Header = "Websites" };
+                StackPanel websitesPanel = new StackPanel();
+                websitesTab.Content = websitesPanel;
+                MoreDetailsTabs.Items.Add(websitesTab);
+
+                List<Tuple<Website, int>> websitePrice = DataModels.GetInstance().GetWebsitePricesForRoom(room);
+                for (int j = 0; j < websitePrice.Count; j++)
+                {
+                    RadioButton websitePriceRadioButton = new RadioButton
+                    {
+                        GroupName = "WebsitePriceRadioGroup " + i.ToString(),
+                        DataContext = websitePrice[j],
+                        Content = websitePrice[j].Item1.name + " , " + websitePrice[j].Item2.ToString(),
+                        FontSize = 22,
+                        Margin = new Thickness(0, 0.025 * cardHeight, 0, 0)
+                    };
+                    websitePriceRadioButton.Checked += webstiePriceRadioButtonChecked;
+                    if (j == 0)
+                        websitePriceRadioButton.IsChecked = true;
+                    websitesPanel.Children.Add(websitePriceRadioButton);
+                }
+
+                //creates room view tab
+                TabItem roomViewsTab = new TabItem { Header = "Views" };
+                StackPanel roomViewsPanel = new StackPanel();
+                roomViewsTab.Content = roomViewsPanel;
+                MoreDetailsTabs.Items.Add(roomViewsTab);
+
+                foreach (RoomView view in room.views)
+                {
+                    Label viewLabel = new Label
+                    {
+                        Content = view.view,
+                        FontSize = 22,
+                        Margin = new Thickness(0, 0.025 * cardHeight, 0, 0)
+                    };
+                    roomViewsPanel.Children.Add(viewLabel);
+                }
+
+                //create room photos
+                TabItem hotelPhotosTab = new TabItem { Header = "Photos" };
+                Canvas hotelPhotosCanvas = new Canvas
+                {
+                    Width = cardWidth,
+                    Height = 300
+                };
+                hotelPhotosTab.Content = hotelPhotosCanvas;
+                MoreDetailsTabs.Items.Add(hotelPhotosTab);
+
+                List<CustomImage> images = new List<CustomImage>();
+                foreach (HotelFacility facility in room.hotel.facilities)
+                    images.Add(facility.image);
+                foreach (PlaceOfIntrest placeOfIntrest in room.hotel.location.placesOfIntrest)
+                    images.Add(placeOfIntrest.image);
+                ImageAlbum hotelAlbum = new ImageAlbum(hotelPhotosCanvas, 25, 25, 250, 250, images);
+
+                //creates room reviews
+                TabItem roomReviewsTab = new TabItem { Header = "Room Reviews" };
+                StackPanel roomReviewsStackPanel = new StackPanel();
+                roomReviewsTab.Content = roomReviewsStackPanel;
+                MoreDetailsTabs.Items.Add(roomReviewsTab);
+
+                List<Booking> roomBookings = new List<Booking>();
+                foreach(Booking booking in roomBookings)
+                {
+                    Border roomBookingCardBorder = new Border
+                    {
+                        Width = cardWidth,
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(0, 0, 0)),
+                        BorderThickness = new Thickness(3),
+                        Margin = new Thickness(0.1 * cardWidth, 25, 0.1 * cardWidth, 0)
+                    };
+                    StackPanel roomBookingCardPanel = new StackPanel
+                    {
+                        Width = 0.8 * cardWidth
+                    };
+                    roomBookingCardBorder.Child = roomBookingCardPanel;
+                    roomReviewsStackPanel.Children.Add(roomBookingCardPanel);
+
+                    Label userNameLabel = new Label
+                    {
+                        Content = "User Name : " + booking.bookingUser.username,
+                        FontSize = 22
+                    };
+                    roomBookingCardPanel.Children.Add(userNameLabel);
+
+                    Label ratingLabel = new Label
+                    {
+                        Content = "Rating : " + booking.bookingReview.rating,
+                        FontSize = 22
+                    };
+                    roomBookingCardPanel.Children.Add(ratingLabel);
+
+                    TextBlock description = new TextBlock
+                    {
+                        Width = cardWidth,
+                        Text = "Description : " + booking.bookingReview.description
+                    };
+                    roomBookingCardPanel.Children.Add(description);
+                }
             }
         }
 
         private void mealRadioButtonChecked(object sender, RoutedEventArgs args)
         {
             RadioButton mealRadioButton = (RadioButton)sender;
-            int idx = int.Parse(mealRadioButton.GroupName);
-            mealPlans[idx] = (MealPlan)mealRadioButton.Content;
+            string[] s = mealRadioButton.GroupName.Split(separator: ' ');
+            int idx = int.Parse(s[1]);
+            selectedMealPlan[idx] = (MealPlan)mealRadioButton.Content;
+        }
+
+        private void webstiePriceRadioButtonChecked(object sender, RoutedEventArgs args)
+        {
+            RadioButton websitePriceRadioButton = (RadioButton)sender;
+            string[] s = websitePriceRadioButton.GroupName.Split(separator: ' ');
+            int idx = int.Parse(s[1]);
+            selectedWebsitePrice[idx] = (Tuple<Website, int>)websitePriceRadioButton.DataContext;
         }
     }
 }
