@@ -415,6 +415,34 @@ namespace Trivago.Models
             return null;
         }
 
+        private RoomType GetRoomType(int licenseNumber, int roomNumber)
+        {
+            /// <summary>
+            /// Gets RoomType object based on hotel and room numbers.
+            /// </summary>
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT Room.room_type, Room_Type.maximum_guests
+                                    FROM Room, Room_Type
+                                    WHERE Room.room_number = :roomNumber
+                                    AND Room.hotel_license_number = :hotelNumber
+                                    AND Room_Type.type_name = Room.room_type";
+            command.Parameters.Add("roomNumber", roomNumber);
+            command.Parameters.Add("hotelNumber", licenseNumber);
+
+            OracleDataReader reader = command.ExecuteReader();
+            RoomType type = null;
+            while (reader.Read())
+            {
+                type = new RoomType(reader["room_type"].ToString(), 
+                    Int32.Parse(reader["maximum_guests"].ToString()));
+                return type;
+            }
+            return type;
+        }
+
         public List<Booking> GetRoomBookings(Room room)
         {
             command = new OracleCommand();
@@ -732,11 +760,45 @@ namespace Trivago.Models
             {
                 reviews.Add(
                     new Review(reader["description"].ToString(),
-                                int.Parse(reader["rating"].ToString()),
-                                int.Parse(reader["booking_number"].ToString()))
-                                );
+                               int.Parse(reader["rating"].ToString()),
+                               int.Parse(reader["booking_number"].ToString()))
+                );
             }
             return reviews;
+        }
+
+        /* 
+         * Disconnected Mode
+         */
+        public List<Room> GetWebsiteRooms(Website website)
+        {
+            /// <summary>
+            /// Get all rooms linked to a website.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter(
+                $"SELECT * FROM Room_Price WHERE website_name = '{website.name}'", oracleConnectionString);
+            DataSet dataset = new DataSet();
+            adapter.Fill(dataset);
+
+            List<Room> rooms = new List<Room>();
+            DataRow[] rows = dataset.Tables[0].Select();
+            foreach (DataRow row in rows)
+            {
+                // TODO: Put an actual image
+                Room newRoom = new Room(
+                    Int32.Parse(row["room_number"].ToString()),
+                    GetHotel(Int32.Parse(row["license_number"].ToString())),
+                    GetRoomType(Int32.Parse(row["license_number"].ToString()),
+                                Int32.Parse(row["room_number"].ToString())),
+                    new CustomImage(new byte[0]),
+                    GetViews(Int32.Parse(row["license_number"].ToString()),
+                                        Int32.Parse(row["room_number"].ToString()))
+                    );
+                rooms.Add(newRoom);
+                MessageBox.Show(row["room_number"].ToString() + " "+ newRoom.number.ToString());
+            }
+
+            return rooms;
         }
 
         /*

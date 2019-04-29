@@ -11,6 +11,7 @@ namespace Trivago.Models
         public String name;
         public int maxGuests;
 
+        // TODO: Unwanted constructor?
         public RoomType()
         {
             name = "";
