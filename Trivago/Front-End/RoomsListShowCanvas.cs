@@ -35,6 +35,8 @@ namespace Trivago.Front_End
             double cardWidth = canvas.Width - 0.2 * canvas.Width;
             double cardHeight = 0.7 * canvas.Height;
 
+            canvas.Background = new SolidColorBrush(Color.FromRgb(239, 239, 239));
+
             ScrollViewer roomScrollViewer = new ScrollViewer
             {
                 Height = canvas.Height
@@ -138,13 +140,8 @@ namespace Trivago.Front_End
                 Grid.SetColumn(locationLabel, 0);
                 grid.Children.Add(locationLabel);
 
-                Button viewMoreButton = new Button
-                {
-                    Content = "Reserve",
-                    Width = cardWidth * 0.1,
-                    Height = cardHeight * 0.1,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
+                Button viewMoreButton = FrontEndHelper.CreateButton(cardWidth * 0.1, cardHeight * 0.1, "Reserve");
+                
                 Grid.SetColumn(viewMoreButton, 1);
                 grid.Children.Add(viewMoreButton);
                 roomDataStackPanel.Children.Add(grid);
@@ -163,6 +160,7 @@ namespace Trivago.Front_End
                 //creates tabs
                 TabControl MoreDetailsTabs = new TabControl();
                 viewMoreExpander.Content = MoreDetailsTabs;
+                MoreDetailsTabs.Background = new SolidColorBrush(Color.FromRgb(239, 239, 239));
 
                 //creates meals tab
                 TabItem MealsTab = new TabItem { Header = "Meals" };
@@ -237,6 +235,7 @@ namespace Trivago.Front_End
                 MoreDetailsTabs.Items.Add(hotelPhotosTab);
 
                 List<CustomImage> images = new List<CustomImage>();
+                images.Add(room.hotel.image);
                 foreach (HotelFacility facility in room.hotel.facilities)
                     images.Add(facility.image);
                 foreach (PlaceOfIntrest placeOfIntrest in room.hotel.location.placesOfIntrest)

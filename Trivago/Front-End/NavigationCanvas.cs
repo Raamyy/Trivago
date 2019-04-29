@@ -49,7 +49,7 @@ namespace Trivago.Front_End
 
         public override void Initialize()
         {
-            canvas.Background = new SolidColorBrush(Color.FromRgb(0, 255, 0));
+            canvas.Background = new SolidColorBrush(Color.FromRgb(9, 48, 65));
 
             double buttonWidth = 120;
             double buttonHeight = 50;
@@ -70,12 +70,12 @@ namespace Trivago.Front_End
 
             Button signupButton = FrontEndHelper.CreateButton(buttonWidth, buttonHeight, "Sign up");
             Canvas.SetTop(signupButton, buttonSpace);
-            Canvas.SetRight(signupButton, buttonWidth + buttonSpace);
+            Canvas.SetRight(signupButton, 10 + buttonSpace);
             canvas.Children.Add(signupButton);
 
             Button loginButton = FrontEndHelper.CreateButton(buttonWidth, buttonHeight, "Login");
             Canvas.SetTop(loginButton, buttonSpace);
-            Canvas.SetRight(loginButton, 2 * buttonWidth + 2 * buttonSpace);
+            Canvas.SetRight(loginButton,buttonWidth + 10 + 2 * buttonSpace);
             canvas.Children.Add(loginButton);
         }
 

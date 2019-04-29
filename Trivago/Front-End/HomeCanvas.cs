@@ -37,10 +37,10 @@ namespace Trivago.Front_End
             selectedDateRange = null;
             selectedType = null;
 
-            double itemsSpacing = 50;
+            double itemsSpacing = 150;
             
             //set canvas background
-            canvas.Background = new SolidColorBrush(Color.FromRgb(255, 0, 0));
+            canvas.Background = new SolidColorBrush(Color.FromRgb(239, 239, 239));
 
             //creates room type combobox
             ComboBox roomTypesComboBox = new ComboBox
@@ -53,8 +53,8 @@ namespace Trivago.Front_End
             roomTypesComboBox.SelectionChanged += ComboBox_SelectionChanged;
             if (roomTypes.Count > 0)
                 roomTypesComboBox.SelectedIndex = 0;
-            Canvas.SetLeft(roomTypesComboBox, 3 * itemsSpacing + 600);
-            Canvas.SetTop(roomTypesComboBox, canvas.Height / 3);
+            Canvas.SetLeft(roomTypesComboBox, 3 * itemsSpacing + 500);
+            Canvas.SetTop(roomTypesComboBox, canvas.Height / 4);
             canvas.Children.Add(roomTypesComboBox);
 
             //creates booking range calendar
@@ -64,8 +64,8 @@ namespace Trivago.Front_End
             };
             selectedDateRange = new CalendarDateRange(DateTime.Today, DateTime.Today);
             bookingCalendar.SelectedDatesChanged += Calander_SelectedDatesChanged;
-            Canvas.SetLeft(bookingCalendar, 2 * itemsSpacing + roomTypesComboBox.Width);
-            Canvas.SetTop(bookingCalendar, canvas.Height / 3);
+            Canvas.SetLeft(bookingCalendar, 2 * itemsSpacing + roomTypesComboBox.Width+40);
+            Canvas.SetTop(bookingCalendar, canvas.Height / 4);
             canvas.Children.Add(bookingCalendar);
 
             //creates locations check boxes
@@ -88,7 +88,7 @@ namespace Trivago.Front_End
                 locationsStackPanel.Children.Add(locationCheckBox);
             }
             Canvas.SetLeft(locationsExpander, itemsSpacing);
-            Canvas.SetTop(locationsExpander, canvas.Height / 3);
+            Canvas.SetTop(locationsExpander, canvas.Height / 4);
             canvas.Children.Add(locationsExpander);
 
             Button searchButton = FrontEndHelper.CreateButton(150, 60, "Search");
