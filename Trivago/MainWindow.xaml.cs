@@ -127,6 +127,12 @@ namespace Trivago
             InitializeRoomsListShowCanvas(rooms);
         }
 
+        public void ShowAdminPanel()
+        {
+            this.Close();
+            Admin_window win = new Admin_window();
+            win.Show();
+        }
         public void LoginButton_Click(object sender, RoutedEventArgs args)
         {
             CurrentCanvas.Hide();
