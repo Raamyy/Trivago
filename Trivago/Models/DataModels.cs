@@ -1177,6 +1177,10 @@ namespace Trivago.Models
 
         public bool DeleteBooking(int booking_number)
         {
+            /// <summary>
+            /// Deletes booking table and the corresponding Define_Booking
+            /// with the given booking number.
+            /// </summary>
             OracleCommand command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
@@ -1194,6 +1198,29 @@ namespace Trivago.Models
 
             command.CommandText = $@"DELETE FROM Booking
                                      WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteUser(User user)
+        {
+            /// <summary>
+            /// Deletes a user from the database and its corresponding credit card.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Delete_User";    // Deletes user and credit card
+            command.Parameters.Add("uName", user.username);
+            command.Parameters.Add("creditNumber", user.userCreditCard.cardSerial);
+
             try
             {
                 command.ExecuteNonQuery();
