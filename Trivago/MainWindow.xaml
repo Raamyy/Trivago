@@ -5,6 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Trivago"
         mc:Ignorable="d"
+        WindowStyle= "SingleBorderWindow"
+        ResizeMode = "NoResize"
+        WindowStartupLocation="CenterScreen"
         Title="Trivago" Height="731.25" Width="1300" x:Name="Window">
     <Window.Resources>
         <Style x:Key="FocusVisual">
@@ -69,6 +72,17 @@
         </Canvas>
         <Canvas x:Name= "RoomsListShowCanvas">
             
+        </Canvas>
+        <Canvas x:Name="LoginCanvas">
+            
+        </Canvas>
+        <Canvas x:Name="SignupCanvas">
+            
+        </Canvas>
+        <Canvas x:Name="LoggedinNavigationCanvas">
+            
+        </Canvas>
+        <Canvas x:Name="BookingsListShowCanvas">
         </Canvas>
     </Canvas>
 </Window>

@@ -35,9 +35,11 @@ namespace Trivago.Front_End
             canvas.Visibility = Visibility.Visible;
         }
 
-        public void Hide()
+        public override void Hide()
         {
-
+            canvas.Children.Clear();
+            canvas.Visibility = Visibility.Hidden;
+            IsInitialized = false;
         }
 
         public static NavigationCanvas GetInstance(Canvas canvas)
@@ -71,11 +73,13 @@ namespace Trivago.Front_End
             Button signupButton = FrontEndHelper.CreateButton(buttonWidth, buttonHeight, "Sign up");
             Canvas.SetTop(signupButton, buttonSpace);
             Canvas.SetRight(signupButton, 10 + buttonSpace);
+            signupButton.Click += FrontEndHelper.GetMainWindow().SignupButton_Click;
             canvas.Children.Add(signupButton);
 
             Button loginButton = FrontEndHelper.CreateButton(buttonWidth, buttonHeight, "Login");
             Canvas.SetTop(loginButton, buttonSpace);
             Canvas.SetRight(loginButton,buttonWidth + 10 + 2 * buttonSpace);
+            loginButton.Click += FrontEndHelper.GetMainWindow().LoginButton_Click;
             canvas.Children.Add(loginButton);
         }
 
