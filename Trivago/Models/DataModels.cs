@@ -132,6 +132,27 @@ namespace Trivago.Models
             return hotels;
         }
 
+        public List<Website> GetAllWebsites()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM website";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Website> websites = new List<Website>();
+            while (reader.Read())
+            {
+                String name = reader["name"].ToString();
+                int rating = int.Parse(reader["rating"].ToString());
+                Website website = new Website(name, rating);
+                websites.Add(website);
+            }
+            return websites;
+        }
+
         public Hotel GetHotel(int licenseNumber)
         {
             command = new OracleCommand();
