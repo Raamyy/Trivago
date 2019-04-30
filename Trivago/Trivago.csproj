@@ -91,6 +91,7 @@
     <Compile Include="Models\Location.cs" />
     <Compile Include="Models\MealPlan.cs" />
     <Compile Include="Models\DataModels.cs" />
+    <Compile Include="Models\PasswordHasher.cs" />
     <Compile Include="Models\PlaceOfIntrest.cs" />
     <Compile Include="Models\Review.cs" />
     <Compile Include="Models\Room.cs" />

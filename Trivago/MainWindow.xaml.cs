@@ -33,55 +33,13 @@ namespace Trivago
         {
             InitializeComponent();
             InitializeInitialCanvases();
-            //AddDatabase();
-        }
-
-        private void AddDatabase()
-        {
-            //AddHotels();
-            //AddRoom();
-        }
-
-        private void AddRoom()
-        {
-            OracleConnection connection = new OracleConnection("data source = orcl; user id = scott; password = tiger;");
-            connection.Open();
-            OracleCommand command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandText = "Insert into Room values(1, 1, 'Single', :image)";
-            command.Parameters.Add("image", new CustomImage(@"resources\images\Room1.jpg").GetByteImage());
-            command.CommandType = CommandType.Text;
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
-
-        private void AddHotels()
-        {
-            OracleConnection connection = new OracleConnection("data source = orcl; user id = scott; password = tiger;");
-            connection.Open();
-            OracleCommand command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandText = "Insert into Hotel values(1, 'conrad', :image, 'Cairo', 'Egypt')";
-            command.Parameters.Add("image", new CustomImage(@"resources\images\hotel1.jpg").GetByteImage());
-            command.CommandType = CommandType.Text;
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
-
-        public Canvas GetHomeCanvas()
-        {
-            return HomeCanvas;
-        }
-
-        public Canvas GetNavigationCanvas()
-        {
-            return NavigationCanvas;
         }
 
         private void InitializeInitialCanvases()
         {
             InitializeNavigationCanvas();
-            InitializeHomeCanvas();
+            //InitializeHomeCanvas();
+            InitializeBookingsListShowCanvas(DataModels.GetInstance().GetUserBookings(new User("Ramy", null, null, null, null)));
         }
 
         private void InitializeLoginCanvas()
@@ -114,6 +72,14 @@ namespace Trivago
             homeCanvas.SetCanvasDimensions(Window.Width, Window.Height - NavigationCanvasHeight);
             homeCanvas.SetCanvasCoord(0, NavigationCanvasHeight);
             homeCanvas.Show();
+        }
+
+        private void InitializeBookingsListShowCanvas(List<Booking> bookings)
+        {
+            CustomCanvas bookingsListShowCanvas = Front_End.BookingsListShow.GetInstance(BookingsListShowCanvas, bookings);
+            bookingsListShowCanvas.SetCanvasDimensions(Window.Width, Window.Height - NavigationCanvasHeight);
+            bookingsListShowCanvas.SetCanvasCoord(0, NavigationCanvasHeight);
+            bookingsListShowCanvas.Show();
         }
 
         private void InitializeNavigationCanvas()
@@ -225,7 +191,7 @@ namespace Trivago
                             signupCanvas.GetExpirationDate()
                         )
                  );
-            bool valid = true;
+            bool valid =
             if(valid == false)
             {
                 MessageBox.Show("User name taken");
