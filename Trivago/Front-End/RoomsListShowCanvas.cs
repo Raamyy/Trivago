@@ -14,6 +14,26 @@ namespace Trivago.Front_End
         private List<MealPlan> selectedMealPlan;
         private List<Tuple<Website, int>> selectedWebsitePrice;
 
+        public MealPlan GetSelectedMealPlan(int index)
+        {
+            return selectedMealPlan[index];
+        }
+
+        public Room GetSelectedRoom(int index)
+        {
+            return rooms[index];
+        }
+
+        public Website GetSelectedWebsite(int index)
+        {
+            return selectedWebsitePrice[index].Item1;
+        }
+
+        public int GetSelectedRoomPrice(int index)
+        {
+            return selectedWebsitePrice[index].Item2;
+        }
+
         private RoomsListShowCanvas(Canvas canvas) : base(canvas)
         {
         }
@@ -121,7 +141,7 @@ namespace Trivago.Front_End
                 };
                 roomDataStackPanel.Children.Add(roomPriceLabel);
 
-                //set view more button and location
+                //set Reserve button and location
                 Grid grid = new Grid
                 {
                     ColumnDefinitions =
@@ -131,6 +151,7 @@ namespace Trivago.Front_End
                     },
                     Margin = new Thickness(0, 0.05 * cardHeight, 0, 0)
                 };
+                roomDataStackPanel.Children.Add(grid);
                 
                 Label locationLabel = new Label
                 {
@@ -140,10 +161,11 @@ namespace Trivago.Front_End
                 Grid.SetColumn(locationLabel, 0);
                 grid.Children.Add(locationLabel);
 
-                Button viewMoreButton = FrontEndHelper.CreateButton(cardWidth * 0.1, cardHeight * 0.1, "Reserve");
-                Grid.SetColumn(viewMoreButton, 1);
-                grid.Children.Add(viewMoreButton);
-                roomDataStackPanel.Children.Add(grid);
+                Button reserveButton = FrontEndHelper.CreateButton(cardWidth * 0.1, cardHeight * 0.1, "Reserve");
+                reserveButton.Tag = i;
+                reserveButton.Click += FrontEndHelper.GetMainWindow().ReserveButton_Click;
+                Grid.SetColumn(reserveButton, 1);
+                grid.Children.Add(reserveButton);
 
                 //creates view more expander
                 Expander viewMoreExpander = new Expander
@@ -195,7 +217,7 @@ namespace Trivago.Front_End
                     RadioButton websitePriceRadioButton = new RadioButton
                     {
                         GroupName = "WebsitePriceRadioGroup " + i.ToString(),
-                        DataContext = websitePrice[j],
+                        Tag = websitePrice[j],
                         Content = websitePrice[j].Item1.name + " , " + websitePrice[j].Item2.ToString(),
                         FontSize = 22,
                         Margin = new Thickness(0, 0.025 * cardHeight, 0, 0)
@@ -314,7 +336,7 @@ namespace Trivago.Front_End
             RadioButton websitePriceRadioButton = (RadioButton)sender;
             string[] s = websitePriceRadioButton.GroupName.Split(separator: ' ');
             int idx = int.Parse(s[1]);
-            selectedWebsitePrice[idx] = (Tuple<Website, int>)websitePriceRadioButton.DataContext;
+            selectedWebsitePrice[idx] = (Tuple<Website, int>)websitePriceRadioButton.Tag;
         }
     }
 }

@@ -1165,6 +1165,7 @@ namespace Trivago.Models
             OracleDataReader reader = command.ExecuteReader();
             if (reader.HasRows == false)
                 return null;
+
             if (!PasswordHasher.Verify(password, reader["password"].ToString()))
                 return null;
 

@@ -17,6 +17,7 @@ using Trivago.Front_End;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 using System.Data;
+using System.Windows.Controls.Primitives;
 
 namespace Trivago
 {   
@@ -38,8 +39,7 @@ namespace Trivago
         private void InitializeInitialCanvases()
         {
             InitializeNavigationCanvas();
-            //InitializeHomeCanvas();
-            InitializeBookingsListShowCanvas(DataModels.GetInstance().GetUserBookings(new User("Ramy", null, null, null, null)));
+            InitializeHomeCanvas();
         }
 
         private void InitializeLoginCanvas()
@@ -141,7 +141,7 @@ namespace Trivago
         public void LoginButtonUserData_Click(object sender, RoutedEventArgs args)
         {
             Front_End.LoginCanvas loginCanvas = Front_End.LoginCanvas.GetInstance(LoginCanvas);
-            User user = null;
+            User user = DataModels.GetInstance().LogUser(loginCanvas.GetUserName(), loginCanvas.GetPassword());
             if(user == null)
             {
                 MessageBox.Show("Invalid data");
@@ -149,6 +149,9 @@ namespace Trivago
             }
             Front_End.NavigationCanvas.GetInstance(NavigationCanvas).Hide();
             InitializeLoggedinNavigationCanvas(user);
+
+            CurrentCanvas.Hide();
+            InitializeHomeCanvas();
         }
 
         public void SignupButtonUserData_Click(object sender, RoutedEventArgs args)
@@ -191,7 +194,7 @@ namespace Trivago
                             signupCanvas.GetExpirationDate()
                         )
                  );
-            bool valid =
+            bool valid = DataModels.GetInstance().RegisterUser(user, signupCanvas.GetPassword());
             if(valid == false)
             {
                 MessageBox.Show("User name taken");
@@ -199,12 +202,25 @@ namespace Trivago
             }
             Front_End.NavigationCanvas.GetInstance(NavigationCanvas).Hide();
             InitializeLoggedinNavigationCanvas(user);
+
+            CurrentCanvas.Hide();
+            InitializeHomeCanvas();
         }
 
         public void HelloLabel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             User user = ((LoggedinNavigationCanvas)currentNavigationCanvas).GetActiveUser();
-            
+            CurrentCanvas.Hide();
+            InitializeBookingsListShowCanvas(DataModels.GetInstance().GetUserBookings(user));
+        }
+
+        public void ReserveButton_Click(object sender, RoutedEventArgs args)
+        {
+            Button reserveButton = (Button)sender;
+            int index = (int)reserveButton.Tag;
+            RoomsListShowCanvas roomListShowCanvas = (RoomsListShowCanvas)CurrentCanvas;
+
+            FrontEndHelper.CreateReservePopupWindow(roomListShowCanvas, index);
         }
     }
 }

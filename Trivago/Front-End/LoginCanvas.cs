@@ -59,6 +59,7 @@ namespace Trivago.Front_End
             userNameGrid.Children.Add(userNameLabel);
 
             TextBox userNameTextBox = new TextBox { FontSize = 22, Width = textBoxWidth};
+            userNameTextBox.TextChanged += userNameTextBoxChanged;
             Grid.SetColumn(userNameTextBox, 1);
             userNameGrid.Children.Add(userNameTextBox);
 
@@ -84,6 +85,7 @@ namespace Trivago.Front_End
                 FontSize = 22,
                 Width = textBoxWidth
             };
+            passwordTextBox.PasswordChanged += passwordTextBoxChanged;
             Grid.SetColumn(passwordTextBox, 1);
             passwordGrid.Children.Add(passwordTextBox);
 
@@ -91,6 +93,7 @@ namespace Trivago.Front_End
 
             //creates login button
             Button loginButton = FrontEndHelper.CreateButton(0.1 * canvas.Width, 0.075 * canvas.Height, "Login");
+            loginButton.Click += FrontEndHelper.GetMainWindow().LoginButtonUserData_Click;
             loginButton.Margin = new Thickness(0, 0.05 * canvas.Height, 0, 0);
             loginDataStackPanel.Children.Add(loginButton);
             

@@ -70,7 +70,9 @@ namespace Trivago.Front_End
             Label helloLabel = new Label
             {
                 Content = "Hello " + user.username,
-                FontSize = 22
+                FontSize = 22,
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)),
+                Cursor = Cursors.Hand,
             };
             helloLabel.MouseLeftButtonDown += FrontEndHelper.GetMainWindow().HelloLabel_MouseLeftButtonDown;
             Canvas.SetRight(helloLabel, 0.05 * canvas.Width);
