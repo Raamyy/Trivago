@@ -1170,5 +1170,39 @@ namespace Trivago.Models
 
             return GetUser(userName);
         }
+
+        /*
+         * Delete Methods
+         */
+
+        public bool DeleteBooking(int booking_number)
+        {
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM Define_Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            command.CommandText = $@"DELETE FROM Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
