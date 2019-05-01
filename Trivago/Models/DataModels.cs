@@ -1329,6 +1329,52 @@ namespace Trivago.Models
             return true;
         }
 
+        public bool DeleteWebsite(Website website)
+        {
+            /// <summary>
+            /// Deletes a website and its associated rooms and bookings.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete child records
+            command.CommandText = $@"DELETE FROM Room_Price
+                                     WHERE website_name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            // Get associated bookings to invoke DeleteBooking
+            command.CommandText = $@"SELECT Booking_Number
+                                     FROM Define_Booking
+                                     WHERE website_name = '{website.name}'";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int bookingNumber = int.Parse(reader["booking_number"].ToString());
+                if (!DeleteBooking(bookingNumber))
+                    return false;
+            }
+
+            command.CommandText = $@"DELETE FROM Website
+                                     WHERE name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
         /*
          * Update Methods
          */
