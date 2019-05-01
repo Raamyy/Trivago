@@ -29,6 +29,7 @@ namespace Trivago
         private const double NavigationCanvasHeight = 100;
         public CustomCanvas CurrentCanvas;
         public CustomCanvas currentNavigationCanvas;
+        public User ActiveUser;
 
         public MainWindow()
         {
@@ -128,12 +129,15 @@ namespace Trivago
 
         public void ShowAdminPanel()
         {
-            this.Close();
             Admin_window win = new Admin_window();
             win.Show();
+            this.Close();
         }
+
         public void LoginButton_Click(object sender, RoutedEventArgs args)
         {
+            ShowAdminPanel();
+            return;
             CurrentCanvas.Hide();
             InitializeLoginCanvas();
         }
@@ -155,6 +159,7 @@ namespace Trivago
             }
             Front_End.NavigationCanvas.GetInstance(NavigationCanvas).Hide();
             InitializeLoggedinNavigationCanvas(user);
+            ActiveUser = user;
 
             CurrentCanvas.Hide();
             InitializeHomeCanvas();
@@ -208,6 +213,7 @@ namespace Trivago
             }
             Front_End.NavigationCanvas.GetInstance(NavigationCanvas).Hide();
             InitializeLoggedinNavigationCanvas(user);
+            ActiveUser = user;
 
             CurrentCanvas.Hide();
             InitializeHomeCanvas();
@@ -222,6 +228,11 @@ namespace Trivago
 
         public void ReserveButton_Click(object sender, RoutedEventArgs args)
         {
+            if(ActiveUser == null)
+            {
+                MessageBox.Show("Please Login");
+                return;
+            }
             Button reserveButton = (Button)sender;
             int index = (int)reserveButton.Tag;
             RoomsListShowCanvas roomListShowCanvas = (RoomsListShowCanvas)CurrentCanvas;

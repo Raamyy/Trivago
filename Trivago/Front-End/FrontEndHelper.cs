@@ -53,11 +53,12 @@ namespace Trivago.Front_End
 
             Window popup = new Window
             {
-                Width = 300,
-                Height = 350,
+                Width = 350,
+                Height = 500,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
-
+                Title = "Confirm Booking"
             };
+
             Grid popupGrid = new Grid
             {
                 Background = new SolidColorBrush(Color.FromRgb(255, 255, 255))
@@ -83,21 +84,40 @@ namespace Trivago.Front_End
 
             Label numberofGuestsLabel = new Label
             {
-                Content = "Number of Guests : "
+                Content = "Number of Guests : ",
+                FontSize = 22
             };
             Grid.SetColumn(numberofGuestsLabel, 0);
             numberofGuestsGrid.Children.Add(numberofGuestsLabel);
 
             TextBox numberofGuestTextBox = new TextBox
             {
-                Width = 100
+                Width = 50,
+                FontSize = 22
             };
             Grid.SetColumn(numberofGuestTextBox, 1);
             numberofGuestsGrid.Children.Add(numberofGuestTextBox);
 
+            Label mealLabel = new Label
+            {
+                Content = "Meal Plan : " + roomListShowCanvas.GetSelectedMealPlan(index).name,
+                FontSize = 22,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+            reservePopupStackPanel.Children.Add(mealLabel);
+
+            Label websiteLabel = new Label
+            {
+                Content = "Website : " + roomListShowCanvas.GetSelectedWebsite(index).name,
+                FontSize = 22,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+            reservePopupStackPanel.Children.Add(websiteLabel);
+
             Label priceLabel = new Label
             {
                 Content = "Price : ",
+                FontSize = 22,
                 Margin = new Thickness(0, 10, 0, 0)
             };
             reservePopupStackPanel.Children.Add(priceLabel);
@@ -115,7 +135,7 @@ namespace Trivago.Front_End
             }
             reservePopupStackPanel.Children.Add(datePicker);
 
-            Button confirmButton = FrontEndHelper.CreateButton(100, 30, "Confirm");
+            Button confirmButton = FrontEndHelper.CreateButton(80, 40, "Confirm");
             confirmButton.Margin = new Thickness(0, 10, 0, 0);
             reservePopupStackPanel.Children.Add(confirmButton);
 
