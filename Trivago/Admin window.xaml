@@ -70,5 +70,20 @@
         <Button x:Name="Rooms_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Rooms" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,259,1094.6,365.6"/>
         <Button x:Name="Offers_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Offers" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,343,1094.6,281.6"/>
 
+        <Canvas x:Name="WebsitesCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
+            
+        </Canvas>
+
+        <Canvas x:Name="HotelsCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
+            
+        </Canvas>
+
+        <Canvas x:Name="RoomsCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
+            
+        </Canvas>
+
+        <Canvas x:Name="OffersCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
+            
+        </Canvas>
     </Grid>
 </Window>
