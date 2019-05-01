@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Trivago.Front_End;
-
+using Trivago.Models;
 namespace Trivago
 {
     /// <summary>
@@ -38,6 +38,14 @@ namespace Trivago
             Button button = (Button)sender;
             
             button.Background = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+        }
+
+        private void Websites_Button_Click(object sender, RoutedEventArgs e)
+        {
+            
+            DataModels model = DataModels.GetInstance();
+            Admin_WebsitesControlCanvas websitesCanvas = Admin_WebsitesControlCanvas.GetInstance(WebsitesCanvas, model.GetAllWebsites());
+            websitesCanvas.Show();
         }
     }
 }
