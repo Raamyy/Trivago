@@ -1194,6 +1194,26 @@ namespace Trivago.Models
             return GetUser(userName);
         }
 
+        public int GetBookingId()
+        {
+            /// <summary>
+            /// Returns the next booking id available.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = @"SELECT Booking_Number
+                                    FROM Booking
+                                    ORDER BY booking_number DESC";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int id = int.Parse(reader["booking_number"].ToString());
+                return id + 1;
+            }
+            return 1;
+        }
+
         /*
          * Delete Methods
          */
