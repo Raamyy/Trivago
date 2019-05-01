@@ -1231,5 +1231,33 @@ namespace Trivago.Models
             }
             return true;
         }
+
+        /*
+         * Update Methods
+         */
+
+        public void UpdateHotel(Hotel hotel)
+        {
+            hotel.licenseNumber = 1;
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Update_Hotel";
+
+            command.Parameters.Add("lNumber", hotel.licenseNumber);
+            command.Parameters.Add("name", hotel.name + "das");
+            command.Parameters.Add("city", hotel.location.city);
+            command.Parameters.Add("city", hotel.location.country);
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
+                return;
+            }
+        }
     }
 }
