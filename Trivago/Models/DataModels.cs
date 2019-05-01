@@ -54,6 +54,7 @@ namespace Trivago.Models
 
         public List<RoomType> GetAllRoomTypes()
         {
+            /* Disconnected Mode */
             /// <summary>
             /// Gets a list of all room types in datbase.
             /// </summary>
@@ -997,18 +998,22 @@ namespace Trivago.Models
 
         public bool AddWebsite(Website website)
         {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            /* Disconnected Mode */
+            /// <summary>
+            /// Adds a new website to the database using Oracle Command Builder.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Website", oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            DataRow row = datatable.NewRow();
+            row["name"] = website.name;
+            row["rating"] = website.rating;
+            datatable.Rows.Add(row);
 
-            command.CommandText = @"INSERT INTO Website
-                                    (name, rating)
-                                    VALUES (:name, :rating)";
-            command.Parameters.Add("name", website.name);
-            command.Parameters.Add("rating", website.rating);
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
             try
             {
-                command.ExecuteNonQuery();
+                adapter.Update(datatable);
             }
             catch (OracleException)
             {
