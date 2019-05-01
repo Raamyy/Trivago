@@ -1192,5 +1192,161 @@ namespace Trivago.Models
 
             return GetUser(userName);
         }
+
+        /*
+         * Delete Methods
+         */
+
+        public bool DeleteBooking(int booking_number)
+        {
+            /// <summary>
+            /// Deletes booking table and the corresponding Define_Booking and Review
+            /// having the given booking number.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete the booking child records
+            command.CommandText = $@"DELETE FROM Define_Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            command.CommandText = $@"DELETE FROM Review
+                                     WHERE booking_number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            // Delete the booking record itself
+            command.CommandText = $@"DELETE FROM Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteUser(User user)
+        {
+            /// <summary>
+            /// Deletes a user from the database and its corresponding credit card and bookings.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete child records
+            command.CommandText = $@"SELECT booking_number
+                                     FROM booking
+                                     WHERE user_name = '{user.username}'";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int num = Int32.Parse(reader["booking_number"].ToString());
+                if (!DeleteBooking(num))
+                    return false;
+            }
+
+            // Delete the user records itself and the corresponding credit card
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Delete_User";    // Deletes user and credit card
+            command.Parameters.Add("uName", user.username);
+            command.Parameters.Add("creditNumber", user.userCreditCard.cardSerial);
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /*
+         * Update Methods
+         */
+
+        public void UpdateHotel(Hotel hotel)
+        {
+            /// <summary>
+            /// Updates Hotel's name, city and country.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Update_Hotel";
+
+            command.Parameters.Add("lNumber", hotel.licenseNumber);
+            command.Parameters.Add("name", hotel.name);
+            command.Parameters.Add("city", hotel.location.city);
+            command.Parameters.Add("city", hotel.location.country);
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
+                return;
+            }
+        }
+
+        public bool UpdateRoom(Room room, RoomView view)
+        {
+            /// <summary>
+            /// Updates a room table based on given room and adds the given view
+            /// to the room's views list.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Room
+                                     SET room_type = '{room.type.name}'
+                                     WHERE room_number = {room.number}
+                                     AND hotel_license_number = {room.hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            command.CommandText = $@"INSERT INTO Room_Views
+                                     (license_number, room_number, room_view)
+                                     VALUES ({room.hotel.licenseNumber}, {room.number}, '{view.view}')";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
