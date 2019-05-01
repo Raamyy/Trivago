@@ -20,8 +20,10 @@ namespace Trivago
     /// </summary>
     public partial class Admin_window : Window
     {
+        public CustomCanvas currentCanvas;
         public Admin_window()
         {
+            FrontEndHelper.adminWindow = this;
             InitializeComponent();
             CustomImage logo = new CustomImage("resources/images/logo.png");
             this.Logo.Source = logo.GetImage().Source;
@@ -42,9 +44,12 @@ namespace Trivago
 
         private void Websites_Button_Click(object sender, RoutedEventArgs e)
         {
-            
+            if(currentCanvas!=null)
+            currentCanvas.Hide();            
             DataModels model = DataModels.GetInstance();
             Admin_WebsitesControlCanvas websitesCanvas = Admin_WebsitesControlCanvas.GetInstance(WebsitesCanvas, model.GetAllWebsites());
+            websitesCanvas.SetCanvasCoord(TabsRectangle.Width, HeaderRectangle.Height);
+            websitesCanvas.SetCanvasDimensions(Width - TabsRectangle.Width, Height - HeaderRectangle.Height);
             websitesCanvas.Show();
         }
     }

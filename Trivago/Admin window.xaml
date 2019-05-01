@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Trivago"
         mc:Ignorable="d"
         Title="Admin_window"  Height="731.25" Width="1300" >
-     <Window.Resources>
+    <Window.Resources>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
                 <Setter.Value>
@@ -59,31 +59,24 @@
             </Setter>
         </Style>
     </Window.Resources>
-    
-    <Grid>
-        <Rectangle Fill="#FF093041" Canvas.Left="0" Canvas.Top="0" Stroke="Black" Height="100" Width="1300" Margin="0,-3,-6.4,604.6"/>
-        <Rectangle Fill="#FF093041" Canvas.Top="114" Canvas.Left="-3" Margin="0,10,1094.6,-0.4" />
+
+    <Canvas>
+        <Rectangle x:Name="HeaderRectangle" Fill="#FF093041" Stroke="Black" Height="100" Width="1300" Margin="0,-3,-6.4,604.6" Grid.ColumnSpan="2"/>
+        <Rectangle x:Name="TabsRectangle" Fill="#FF093041" Width="200" Height="702" />
         <Image Name="Logo" HorizontalAlignment="Left" Height="213" Margin="10,10,0,0" VerticalAlignment="Top" Width="213" Source="resources/images/logo.png"/>
-        <Label Content="Admin Panel" HorizontalAlignment="Left" Margin="568,10,0,0" VerticalAlignment="Top" Foreground="White" FontSize="50" FontFamily="Roboto"/>
-        <Button x:Name="Websites_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Websites" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,97,1094.6,527.6"/>
-        <Button x:Name="Hotels_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Hotels" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,178,1094.6,446.6"/>
-        <Button x:Name="Rooms_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Rooms" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,259,1094.6,365.6"/>
-        <Button x:Name="Offers_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Offers" Canvas.Top="114" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" Canvas.Left="-4" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,343,1094.6,281.6"/>
+        <Label Content="Admin Panel" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontSize="50" FontFamily="Roboto" Grid.Column="1" Canvas.Left="538" Canvas.Top="10"/>
+        <Button x:Name="Websites_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Websites" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,97,301.2,527.6" Click="Websites_Button_Click"/>
+        <Button x:Name="Hotels_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Hotels" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,178,301.2,446.6"/>
+        <Button x:Name="Rooms_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Rooms" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,259,301.2,365.6"/>
+        <Button x:Name="Offers_Button" HorizontalContentAlignment="Left"  Foreground="White" Background="#FF093041" Content=" Offers" BorderThickness="0" FontSize="30" FontFamily="Roboto" FontWeight="Bold" RenderTransformOrigin="-1.435,0.143" MouseEnter="Button_Mouse_Enter" MouseLeave="Button_Mouse_Leave" Margin="0,343,301.2,281.6"/>
 
-        <Canvas x:Name="WebsitesCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
-            
-        </Canvas>
+        <Canvas x:Name="WebsitesCanvas"/>
 
-        <Canvas x:Name="HotelsCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
-            
-        </Canvas>
+        <Canvas x:Name="HotelsCanvas"/>
 
-        <Canvas x:Name="RoomsCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
-            
-        </Canvas>
+        <Canvas x:Name="RoomsCanvas"/>
 
-        <Canvas x:Name="OffersCanvas" Margin="199,97,-0.4,-0.4" Visibility="Hidden">
-            
-        </Canvas>
-    </Grid>
+        <Canvas x:Name="OffersCanvas"/>
+
+    </Canvas>
 </Window>

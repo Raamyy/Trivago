@@ -1192,5 +1192,20 @@ namespace Trivago.Models
 
             return GetUser(userName);
         }
+        
+        public bool isAdmin(string userName, string password)
+        {
+            command = new OracleCommand();
+            command.CommandText = @"select *
+                                   from admin
+                                   where user_name = :username
+                                    AND password = :password";
+            command.Connection = connection;
+            command.Parameters.Add("username", userName);
+            command.Parameters.Add("password", password);
+
+            OracleDataReader reader = command.ExecuteReader();
+            return reader.HasRows == true;
+        }
     }
 }
