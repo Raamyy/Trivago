@@ -1265,6 +1265,31 @@ namespace Trivago.Models
             return true;
         }
 
+        public bool DeleteReview(Review review)
+        {
+            /* Disconnected Mode */
+            /// <summary>
+            /// Removes a booking review according to the booking number.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter(
+                $@"SELECT * FROM Review WHERE booking_number = {review.bookingNumber}",
+                oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            datatable.Rows[0].Delete();
+
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
+            try
+            {
+                adapter.Update(datatable);
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
         /*
          * Update Methods
          */
