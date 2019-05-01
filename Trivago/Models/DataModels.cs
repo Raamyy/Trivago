@@ -1330,5 +1330,29 @@ namespace Trivago.Models
             }
             return true;
         }
+
+        public bool UpdateReview(Review review)
+        {
+            /// <summary>
+            /// Updates an existing review based on the given object.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Review", oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            DataRow[] rows = datatable.Select();
+
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
+            foreach(var row in rows)
+            {
+                if (row["booking_number"].ToString() == review.bookingNumber.ToString())
+                {
+                    row["description"] = review.description;
+                    row["rating"] = review.rating;
+                    adapter.Update(rows);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
