@@ -1408,5 +1408,29 @@ namespace Trivago.Models
             }
             return true;
         }
+
+        public bool UpdateRoomPrice(Room room, Website website, int price)
+        {
+            /// <summary>
+            /// Updates a room price relative to the hotel and website.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Room_Price
+                                     SET price = {price}
+                                     WHERE website_name = '{website.name}'
+                                     AND license_number = {room.hotel.licenseNumber}
+                                     AND room_number = {room.number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
