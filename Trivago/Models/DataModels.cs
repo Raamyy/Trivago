@@ -54,20 +54,19 @@ namespace Trivago.Models
 
         public List<RoomType> GetAllRoomTypes()
         {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            /// <summary>
+            /// Gets a list of all room types in datbase.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Room_Type", oracleConnectionString);
+            DataSet dataset = new DataSet();
+            adapter.Fill(dataset);
 
-            command.CommandText = @"SELECT *
-                                    FROM room_type";
-
-            OracleDataReader reader = command.ExecuteReader();
             List<RoomType> roomTypes = new List<RoomType>();
-            while (reader.Read())
+            DataRow[] rows = dataset.Tables[0].Select();
+            foreach (var row in rows)
             {
-                string name = reader["type_name"].ToString();
-                int maxGuests = int.Parse(reader["maximum_guests"].ToString());
-
+                string name = row["type_name"].ToString();
+                int maxGuests = int.Parse(row["maximum_guests"].ToString());
                 roomTypes.Add(new RoomType(name, maxGuests));
             }
             return roomTypes;
