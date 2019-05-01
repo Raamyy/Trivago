@@ -1099,6 +1099,25 @@ namespace Trivago.Models
             return true;
         }
 
+        public bool AddRoomView(Room room, RoomView view)
+        {
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"INSERT INTO Room_Views
+                                     (license_number, room_number, room_view)
+                                     VALUES ({room.hotel.licenseNumber}, {room.number}, '{view.view}')";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public bool RegisterUser(User user, string password)
         {
             /// <summary>
@@ -1320,7 +1339,7 @@ namespace Trivago.Models
             }
         }
 
-        public bool UpdateRoom(Room room, RoomView view)
+        public bool UpdateRoom(Room room)
         {
             /// <summary>
             /// Updates a room table based on given room and adds the given view
@@ -1333,18 +1352,6 @@ namespace Trivago.Models
                                      SET room_type = '{room.type.name}'
                                      WHERE room_number = {room.number}
                                      AND hotel_license_number = {room.hotel.licenseNumber}";
-            try
-            {
-                command.ExecuteNonQuery();
-            }
-            catch (OracleException)
-            {
-                return false;
-            }
-
-            command.CommandText = $@"INSERT INTO Room_Views
-                                     (license_number, room_number, room_view)
-                                     VALUES ({room.hotel.licenseNumber}, {room.number}, '{view.view}')";
             try
             {
                 command.ExecuteNonQuery();
