@@ -1178,13 +1178,14 @@ namespace Trivago.Models
         public bool DeleteBooking(int booking_number)
         {
             /// <summary>
-            /// Deletes booking table and the corresponding Define_Booking
-            /// with the given booking number.
+            /// Deletes booking table and the corresponding Define_Booking and Review
+            /// having the given booking number.
             /// </summary>
             OracleCommand command = new OracleCommand();
             command.Connection = connection;
             command.CommandType = CommandType.Text;
 
+            // Delete the booking child records
             command.CommandText = $@"DELETE FROM Define_Booking
                                      WHERE Booking_Number = {booking_number}";
             try
@@ -1196,6 +1197,18 @@ namespace Trivago.Models
                 return false;
             }
 
+            command.CommandText = $@"DELETE FROM Review
+                                     WHERE booking_number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            // Delete the booking record itself
             command.CommandText = $@"DELETE FROM Booking
                                      WHERE Booking_Number = {booking_number}";
             try
@@ -1212,10 +1225,25 @@ namespace Trivago.Models
         public bool DeleteUser(User user)
         {
             /// <summary>
-            /// Deletes a user from the database and its corresponding credit card.
+            /// Deletes a user from the database and its corresponding credit card and bookings.
             /// </summary>
             OracleCommand command = new OracleCommand();
             command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete child records
+            command.CommandText = $@"SELECT booking_number
+                                     FROM booking
+                                     WHERE user_name = '{user.username}'";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int num = Int32.Parse(reader["booking_number"].ToString());
+                if (!DeleteBooking(num))
+                    return false;
+            }
+
+            // Delete the user records itself and the corresponding credit card
             command.CommandType = CommandType.StoredProcedure;
             command.CommandText = "Delete_User";    // Deletes user and credit card
             command.Parameters.Add("uName", user.username);
@@ -1229,6 +1257,7 @@ namespace Trivago.Models
             {
                 return false;
             }
+
             return true;
         }
 
