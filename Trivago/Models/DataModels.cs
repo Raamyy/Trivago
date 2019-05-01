@@ -1386,5 +1386,27 @@ namespace Trivago.Models
             }
             return false;
         }
+
+        public bool UpdateWebsite(Website website)
+        {
+            /// <summary>
+            /// Updates a website rating.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Website
+                                     SET rating = {website.rating}
+                                     WHERE name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
