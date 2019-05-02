@@ -137,8 +137,6 @@ namespace Trivago
 
         public void LoginButton_Click(object sender, RoutedEventArgs args)
         {
-            ShowAdminPanel();
-            return;
             CurrentCanvas.Hide();
             InitializeLoginCanvas();
         }
@@ -152,6 +150,11 @@ namespace Trivago
         public void LoginButtonUserData_Click(object sender, RoutedEventArgs args)
         {
             Front_End.LoginCanvas loginCanvas = Front_End.LoginCanvas.GetInstance(LoginCanvas);
+            if(DataModels.GetInstance().isAdmin(loginCanvas.GetUserName(), loginCanvas.GetPassword()))
+            {
+                ShowAdminPanel();
+                return;
+            }
             User user = DataModels.GetInstance().LogUser(loginCanvas.GetUserName(), loginCanvas.GetPassword());
             if(user == null)
             {

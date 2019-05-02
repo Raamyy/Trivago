@@ -80,5 +80,27 @@ namespace Trivago
         {
             FrontEndHelper.CreateAddRoomPopupWindow();
         }
+
+        private void Websites_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if(currentCanvas!=null)
+            currentCanvas.Hide();            
+            DataModels model = DataModels.GetInstance();
+            Admin_WebsitesControlCanvas websitesCanvas = Admin_WebsitesControlCanvas.GetInstance(WebsitesCanvas, model.GetAllWebsites());
+            websitesCanvas.SetCanvasCoord(TabsRectangle.Width, HeaderRectangle.Height);
+            websitesCanvas.SetCanvasDimensions(Width - TabsRectangle.Width, Height - HeaderRectangle.Height);
+            websitesCanvas.Show();
+        }
+
+        private void Offers_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentCanvas != null)
+                currentCanvas.Hide();
+            DataModels model = DataModels.GetInstance();
+            AdminOffersControlCanvas offersCanvas = AdminOffersControlCanvas.GetInstance(OffersCanvas, model.GetAllOffers());
+            offersCanvas.SetCanvasCoord(TabsRectangle.Width, HeaderRectangle.Height);
+            offersCanvas.SetCanvasDimensions(Width - TabsRectangle.Width, Height - HeaderRectangle.Height);
+            offersCanvas.Show();
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace Trivago.Models
 
         public override string ToString()
         {
-            return name + " (" + licenseNumber + ")";
+            return name + $"( {licenseNumber.ToString()} )";
         }
     }
 }

@@ -73,6 +73,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Front-End\AdminOffersControlCanvas.cs" />
     <Compile Include="Front-End\AdminHotelCanvas.cs" />
     <Compile Include="Front-End\AdminRoomsCanvas.cs" />
     <Compile Include="Front-End\Admin_WebsitesControlCanvas.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Models\Location.cs" />
     <Compile Include="Models\MealPlan.cs" />
     <Compile Include="Models\DataModels.cs" />
+    <Compile Include="Models\Offer.cs" />
     <Compile Include="Models\PasswordHasher.cs" />
     <Compile Include="Models\PlaceOfIntrest.cs" />
     <Compile Include="Models\Review.cs" />

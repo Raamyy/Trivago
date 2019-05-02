@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -61,7 +62,7 @@ namespace Trivago.Front_End
             scrollViewer.Content = roomCardsStackPanel;
 
             Button AddButton = FrontEndHelper.CreateButton(120, 60, "Add");
-            AddButton.Click += FrontEndHelper.GetAdminWindow().Room_Add_Button_Click;
+            AddButton.Click += Room_Add_Button_Click;
             AddButton.Margin = new Thickness(0.8 * cardWidth, 20, 0, 0);
             roomCardsStackPanel.Children.Add(AddButton);
 
@@ -152,6 +153,8 @@ namespace Trivago.Front_End
                 cardStackPanel.Children.Add(buttonsGrid);
 
                 Button changePhotoButton = FrontEndHelper.CreateButton(160, 40, "Change Photo");
+                changePhotoButton.Click += ChangePhotoButton_Click;
+                changePhotoButton.Tag = room;
                 Grid.SetColumn(changePhotoButton, 0);
                 changePhotoButton.Margin = new Thickness(0.55 * cardWidth, 0, 0, 0);
                 buttonsGrid.Children.Add(changePhotoButton);
@@ -165,6 +168,9 @@ namespace Trivago.Front_End
 
                 Button addViewbutton = FrontEndHelper.CreateButton(90, 40, "Add view");
                 addViewbutton.Margin = new Thickness(10, 0, 0, 0);
+                addViewbutton.Click += AddViewbutton_Click;
+                addViewbutton.Tag = new List<object>();
+                ((List<object>)addViewbutton.Tag).Add(room);
                 Grid.SetColumn(addViewbutton, 2);
                 buttonsGrid.Children.Add(addViewbutton);
                 
@@ -181,6 +187,7 @@ namespace Trivago.Front_End
                 {
                     Width = cardWidth
                 };
+                ((List<object>)addViewbutton.Tag).Add(viewsList);
                 cardStackPanel.Children.Add(viewsList);
 
                 foreach (RoomView view in room.views)
@@ -193,6 +200,36 @@ namespace Trivago.Front_End
                     viewsList.Items.Add(viewListBoxItem);
                 }
             }
+        }
+
+        private void Room_Add_Button_Click(object sender, RoutedEventArgs args)
+        {
+            FrontEndHelper.CreateAddRoomPopupWindow();
+        }
+
+        private void AddViewbutton_Click(object sender, RoutedEventArgs e)
+        {
+            Button addViewButton = (Button)sender;
+            List<object> objects = (List<object>)sender;
+            Room room = (Room)objects[0];
+            ListBox viewsList = (ListBox)objects[1];
+
+            //FrontEndHelper.CreateAddRoomViewPopupWindow(room, viewsList);
+        }
+
+        private void ChangePhotoButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog
+            {
+                Filter = "JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif|PNG Files (*.png)|*.png",
+                Title = "Select Room Photo"
+            };
+            dlg.ShowDialog();
+            if (dlg.FileName.ToString() == "")
+                return;
+            Room room = (Room)((Button)sender).Tag;
+            room.image = new CustomImage(dlg.FileName.ToString());
+            //DataModels.GetInstance().UpdateRoom(room);
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
