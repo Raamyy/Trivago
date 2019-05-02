@@ -68,6 +68,7 @@ namespace Trivago.Front_End
         
         public static void CreateReservePopupWindow(RoomsListShowCanvas roomListShowCanvas, int index)
         {
+            
             DataModels database = DataModels.GetInstance();
 
             Window popup = new Window
@@ -146,6 +147,7 @@ namespace Trivago.Front_End
                 SelectionMode = CalendarSelectionMode.SingleRange,
                 Margin = new Thickness(0, 10, 0, 0)
             };
+            datePicker.SelectedDate = DateTime.Now;
             datePicker.DisplayDateStart = DateTime.Today;
             List<Booking> bookings = database.GetRoomBookings(roomListShowCanvas.GetSelectedRoom(index));
             foreach (Booking booking in bookings)
@@ -154,12 +156,58 @@ namespace Trivago.Front_End
             }
             reservePopupStackPanel.Children.Add(datePicker);
 
-            Button confirmButton = FrontEndHelper.CreateButton(80, 40, "Confirm");
-            confirmButton.Margin = new Thickness(0, 10, 0, 0);
-            reservePopupStackPanel.Children.Add(confirmButton);
+            Button confirmReserveButton = FrontEndHelper.CreateButton(80, 40, "Confirm");
+            confirmReserveButton.Margin = new Thickness(0, 10, 0, 0);
+            confirmReserveButton.Click += ConfirmReserveButton_Click;
+            reservePopupStackPanel.Children.Add(confirmReserveButton);
+            List<object> data = new List<object>();
+            data.Add(datePicker);
+            data.Add(numberofGuestTextBox);
+            data.Add(roomListShowCanvas);
+            data.Add(index);
+            confirmReserveButton.Tag = data;
 
             popup.Owner = GetMainWindow();
             popup.ShowDialog();
+        }
+
+        private static void ConfirmReserveButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataModels database = DataModels.GetInstance();
+            Button button = (Button)sender;
+            List<Object> data = (List<Object>)button.Tag;
+            Calendar datePicker = (Calendar)data[0];
+            TextBox numberofGuestTextBox = (TextBox)data[1];
+            RoomsListShowCanvas roomListShowCanvas = (RoomsListShowCanvas)data[2];
+            int index = (int)data[3];
+
+            DateTime startDate = datePicker.SelectedDates[0];
+            DateTime endDate = datePicker.SelectedDates[datePicker.SelectedDates.Count-1];
+            
+            if( !BackEndHelper.IsNumber(numberofGuestTextBox.Text))
+            {
+                MessageBox.Show("Number of guests must be a number");
+                return;
+            }
+            int numberOfGuests = int.Parse(numberofGuestTextBox.Text);
+            Room room = roomListShowCanvas.GetSelectedRoom(index);
+
+            if (numberOfGuests > room.type.maxGuests)
+            {
+                MessageBox.Show("Number of Guests bigger than room capacity");
+                return;
+            }
+
+            Booking booking = new Booking(database.GetBookingId(), startDate, endDate, numberOfGuests,
+                GetMainWindow().ActiveUser, roomListShowCanvas.GetSelectedMealPlan(index),
+                room, new Review(database.GetBookingId()), roomListShowCanvas.GetSelectedWebsite(index));
+
+            if(database.AddBooking(booking))
+            {
+                MessageBox.Show("You Booked the room !");
+            }
+            else
+                MessageBox.Show("Error");
         }
 
         public static void CreateAddWebsitePopupWindow()
@@ -886,6 +934,122 @@ namespace Trivago.Front_End
             addRoomButton.Tag = tags;
             addDataStackPanel.Children.Add(addRoomButton);
             popup.ShowDialog();
+        }
+
+        public static void CreateAddReviewPopupWindow(Booking booking)
+        {
+            Window popup = new Window
+            {
+                Width = 330,
+                Height = 400,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Title = "Add Review"
+            };
+
+            StackPanel stackPanel = new StackPanel
+            {
+                Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                Margin = new Thickness(10, popup.Height / 4, 10, 10)
+            };
+
+            Grid popupGrid = new Grid
+            {
+                Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width =GridLength.Auto},
+                        new ColumnDefinition { Width =GridLength.Auto}
+                    },
+                RowDefinitions =
+                {
+                    new RowDefinition{ Height = GridLength.Auto},
+                    new RowDefinition{ Height = GridLength.Auto}
+                }
+            };
+            popup.Content = stackPanel;
+            stackPanel.Children.Add(popupGrid);
+
+            //
+            Label websiteNameLabel = new Label
+            {
+                Content = "your review : ",
+                FontSize = 17
+            };
+            Grid.SetColumn(websiteNameLabel, 0);
+            Grid.SetRow(websiteNameLabel, 0);
+            popupGrid.Children.Add(websiteNameLabel);
+
+            //
+            Label websiteRatingLabel = new Label
+            {
+                Content = "Your Rating : ",
+                FontSize = 17
+            };
+            Grid.SetColumn(websiteRatingLabel, 0);
+            Grid.SetRow(websiteRatingLabel, 1);
+            popupGrid.Children.Add(websiteRatingLabel);
+
+            //
+            TextBox reviewTextBox = new TextBox
+            {
+                Width = 150,
+                Height = 20,
+                FontSize = 15
+            };
+            Grid.SetColumn(reviewTextBox, 1);
+            Grid.SetRow(reviewTextBox, 0);
+            popupGrid.Children.Add(reviewTextBox);
+
+            //
+            TextBox ratingTextBox = new TextBox
+            {
+                Width = 150,
+                Height = 20,
+                FontSize = 15
+            };
+            Grid.SetColumn(ratingTextBox, 1);
+            Grid.SetRow(ratingTextBox, 1);
+            popupGrid.Children.Add(ratingTextBox);
+
+
+            Button addReviewConfirmButton = FrontEndHelper.CreateButton(80, 40, "Submit Review");
+            addReviewConfirmButton.Margin = new Thickness(0, 10, 0, 0);
+
+            List<Object> data = new List<Object>();
+            data.Add(booking);
+            data.Add(reviewTextBox);
+            data.Add(ratingTextBox);
+
+            addReviewConfirmButton.Tag = data;
+            addReviewConfirmButton.Click += AddReviewConfirmButton_Click;
+            stackPanel.Children.Add(addReviewConfirmButton);
+
+
+            popup.Owner = GetAdminWindow();
+            popup.ShowDialog();
+        }
+
+        private static void AddReviewConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataModels database = DataModels.GetInstance();
+            Button addRoomButton = (Button)sender;
+            List<object> objects = (List<object>)addRoomButton.Tag;
+            Booking booking= (Booking)objects[0];
+            TextBox reviewTextBox = (TextBox)objects[1];
+            TextBox ratingTexyBox = (TextBox)objects[2];
+
+            if (!BackEndHelper.IsNumber(ratingTexyBox.Text))
+            {
+                MessageBox.Show("Rating must be a number !");
+                return;
+            }
+            bool done = database.AddReview(new Review(reviewTextBox.Text, int.Parse(ratingTexyBox.Text), booking.number));
+            if (done)
+                MessageBox.Show("Review submitted");
+            else
+                MessageBox.Show("Error!");
+
+
         }
 
         private static void AddRoomButton_Click(object sender, RoutedEventArgs e)

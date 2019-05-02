@@ -68,7 +68,7 @@ namespace Trivago.Front_End
                 //set username label
                 Label userNameLabel = new Label
                 {
-                    Content = "User Name : " + booking.bookingUser.name,
+                    Content = "User Name : " + booking.bookingUser.username,
                     FontSize = 22,
                     Margin = new Thickness(0, 15, 0, 0)
                 };
@@ -156,17 +156,44 @@ namespace Trivago.Front_End
 
                 Button reviewButton = FrontEndHelper.CreateButton(0.15 * cardWidth, 50, "Review");
                 reviewButton.Margin = new Thickness(0, 15, 0, 15);
+                reviewButton.Click += ReviewButton_Click;
+                reviewButton.Tag = booking;
                 Grid.SetRow(reviewButton, 3);
                 Grid.SetColumn(reviewButton, 0);
                 dataGrid.Children.Add(reviewButton);
 
                 Button refundButton = FrontEndHelper.CreateButton(0.15 * cardWidth, 50, "Refund");
                 refundButton.Margin = new Thickness(0, 15, 0, 15);
+                refundButton.Click += RefundButton_Click;
+                refundButton.Tag = booking;
                 Grid.SetRow(refundButton, 3);
                 Grid.SetColumn(refundButton, 1);
                 dataGrid.Children.Add(refundButton);
                 
             }
+        }
+
+        private void ReviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            FrontEndHelper.CreateAddReviewPopupWindow( (Booking)((Button)sender).Tag  );
+        }
+
+        private void RefundButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataModels database = DataModels.GetInstance();
+            Button button = (Button)sender;
+            Booking booking = (Booking)button.Tag;
+            User user = FrontEndHelper.GetMainWindow().ActiveUser;
+
+            if(DateTime.Now > booking.startDate.Subtract(TimeSpan.FromDays(3)))
+            {
+                MessageBox.Show("This booking is not refundable");
+                return;
+            }
+            if (database.DeleteBooking(booking.number))
+                MessageBox.Show("Refunded.");
+            else
+                MessageBox.Show("Error");
         }
     }
 }

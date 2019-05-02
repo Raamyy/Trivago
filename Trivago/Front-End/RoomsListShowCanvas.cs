@@ -278,6 +278,8 @@ namespace Trivago.Front_End
                 for (int j = 0; j < roomBookings.Count; j++)
                 {
                     Booking booking = roomBookings[j];
+                    if (booking.bookingReview == null)
+                        continue;
                     Border roomBookingCardBorder = new Border
                     {
                         Width = 0.8 * cardWidth,

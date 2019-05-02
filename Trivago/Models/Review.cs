@@ -12,6 +12,13 @@ namespace Trivago.Models
         public int rating;
         public int bookingNumber;
 
+        public Review(int bookingNumber)
+        {
+            description = "";
+            rating = 0;
+            this.bookingNumber = bookingNumber;
+        }
+
         public Review(string description, int rating, int bookingNumber)
         {
             this.description = description;
