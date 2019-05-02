@@ -69,7 +69,12 @@ namespace Trivago.Front_End
             for (int i = 0; i < rooms.Count; i++)
             {
                 Room room = rooms[i];
-
+                List<Tuple<Website, int>> websitePrice = DataModels.GetInstance().GetWebsitePricesForRoom(room);
+                string bestPrice = "NaN";
+                if(websitePrice.Count == 0)
+                continue;
+                else
+                bestPrice = websitePrice[0].Item2.ToString();
                 //creates room card
                 Border cardBorder = new Border
                 {
@@ -135,7 +140,7 @@ namespace Trivago.Front_End
                 //set room price
                 Label roomPriceLabel = new Label
                 {
-                    Content = "Price: ",
+                    Content = "Best Price: "+ bestPrice,
                     FontSize = 22,
                     Margin = new Thickness(0, 0.05 * cardHeight, 0, 0)
                 };
@@ -211,7 +216,7 @@ namespace Trivago.Front_End
                 websitesTab.Content = websitesPanel;
                 MoreDetailsTabs.Items.Add(websitesTab);
 
-                List<Tuple<Website, int>> websitePrice = DataModels.GetInstance().GetWebsitePricesForRoom(room);
+                
                 for (int j = 0; j < websitePrice.Count; j++)
                 {
                     RadioButton websitePriceRadioButton = new RadioButton
