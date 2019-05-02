@@ -1538,6 +1538,63 @@ namespace Trivago.Models
 
         }
 
+        public bool DeleteHotel(Hotel hotel)
+        {
+            List<Room> hotelRooms = GetHotelRooms(hotel.licenseNumber);
+            foreach(Room room in hotelRooms)
+            {
+                if (!DeleteRoom(room))
+                    return false;
+            }
+
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM hotel_facilities
+                                     WHERE license_number ={hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                return false;
+            }
+
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM meal_plan
+                                     WHERE hotel_license_number ={hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                return false;
+            }
+
+
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM hotel
+                                     WHERE license_number ={hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         /*
          * Update Methods
