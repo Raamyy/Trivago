@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Trivago.Front_End;
 using Trivago.Models;
+
 namespace Trivago
 {
     /// <summary>
@@ -21,10 +22,11 @@ namespace Trivago
     public partial class Admin_window : Window
     {
         public CustomCanvas currentCanvas;
+
         public Admin_window()
         {
-            FrontEndHelper.adminWindow = this;
             InitializeComponent();
+            FrontEndHelper.SetAdminWindow(this);
             CustomImage logo = new CustomImage("resources/images/logo.png");
             this.Logo.Source = logo.GetImage().Source;
         }
@@ -40,6 +42,43 @@ namespace Trivago
             Button button = (Button)sender;
             
             button.Background = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+        }
+
+        public void InitializeHotelsCanvas(List<Hotel> hotels)
+        {
+            AdminHotelCanvas hotelsCanvas = AdminHotelCanvas.GetInstance(HotelsCanvas, hotels);
+            hotelsCanvas.SetCanvasCoord(TabsRectangle.Width, HeaderRectangle.Height);
+            hotelsCanvas.SetCanvasDimensions(Width - TabsRectangle.Width, Height - HeaderRectangle.Height);
+            hotelsCanvas.Show();
+            currentCanvas = hotelsCanvas;
+        }
+
+        public void InitializeRoomsCanvas(List<Room> rooms)
+        {
+            AdminRoomsCanvas adminRoomsCanvas = AdminRoomsCanvas.GetInstance(RoomsCanvas, rooms);
+            adminRoomsCanvas.SetCanvasCoord(TabsRectangle.Width, HeaderRectangle.Height);
+            adminRoomsCanvas.SetCanvasDimensions(Width - TabsRectangle.Width, Height - HeaderRectangle.Height);
+            adminRoomsCanvas.Show();
+            currentCanvas = adminRoomsCanvas;
+        }
+
+        private void Hotels_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentCanvas != null)
+                currentCanvas.Hide();
+            InitializeHotelsCanvas(DataModels.GetInstance().GetAllHotels());
+        }
+
+        private void Rooms_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentCanvas != null)
+                currentCanvas.Hide();
+            InitializeRoomsCanvas(DataModels.GetInstance().GetAllRooms());
+        }
+
+        public void Room_Add_Button_Click(object sender, RoutedEventArgs args)
+        {
+            FrontEndHelper.CreateAddRoomPopupWindow();
         }
 
         private void Websites_Button_Click(object sender, RoutedEventArgs e)
