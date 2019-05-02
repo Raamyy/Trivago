@@ -26,5 +26,10 @@ namespace Trivago.Models
             this.facilities = facilities;
             this.mealPlans = mealPlans;
         }
+
+        public override string ToString()
+        {
+            return name + $"( {licenseNumber.ToString()} )";
+        }
     }
 }

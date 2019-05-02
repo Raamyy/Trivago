@@ -24,5 +24,9 @@ namespace Trivago.Models
             this.views = views;
             this.image = image;
         }
+        public override string ToString()
+        {
+            return $"{hotel.name} (#{number})";
+        }
     }
 }

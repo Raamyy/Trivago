@@ -16,5 +16,10 @@ namespace Trivago.Models
             this.name = name;
             this.rating = rating;
         }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

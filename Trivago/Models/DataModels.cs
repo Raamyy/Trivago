@@ -303,6 +303,36 @@ namespace Trivago.Models
             return null;
         }
 
+        public List<Room> GetHotelRooms(int hotelLicenceNumber)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT *
+                                    FROM room
+                                    where hotel_license_number = :hotelNumber";
+
+            command.Parameters.Add("hotelNumber", hotelLicenceNumber);
+            List<Room> rooms = new List<Room>();
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                // Build the room object with the dependant objects
+                String s = reader["hotel_license_number"].ToString();
+                Hotel hotel = GetHotel(Int32.Parse(s));
+                int roomNumber = int.Parse(reader["room_number"].ToString());
+                List<RoomView> views = GetViews(roomNumber, hotelLicenceNumber);
+                byte[] image = (byte[])reader["room_image"];
+                string roomType = reader["room_type"].ToString();
+
+               Room room = new Room(roomNumber, hotel, GetRoomType(roomType),
+                                new CustomImage(image), views);
+                rooms.Add(room);
+            }
+            return rooms;
+        }
+
         private MealPlan GetMealPlan(int hotelLicenceNumber, string mealPlanName)
         {
             command = new OracleCommand();
@@ -675,6 +705,33 @@ namespace Trivago.Models
             return bookings;
         }
 
+        public List<Offer> GetAllOffers()
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = @"SELECT website_name, price, license_number, room_number
+                                    from room_price";
+
+            OracleDataReader reader = command.ExecuteReader();
+            List<Offer> offers = new List<Offer>();
+            while (reader.Read())
+            {
+                string websiteName = reader["website_name"].ToString();
+                int price = int.Parse(reader["price"].ToString());
+                int licenceNumber = int.Parse(reader["license_number"].ToString());
+                int roomNumber = int.Parse(reader["room_number"].ToString());
+
+                Website website = GetWebsite(websiteName);
+                Room room = GetRoom(licenceNumber, roomNumber);
+
+                Offer offer = new Offer(website, room, price);
+                offers.Add(offer);
+            }
+            return offers;
+        }
+
         public List<Tuple<Website, int>> GetWebsitePricesForRoom(Room room)
         {
             /// <summary>
@@ -819,6 +876,28 @@ namespace Trivago.Models
         /*
          * Insertion to database methods.
          */
+
+        public bool AddOffer(Offer offer)
+        {
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Add location object
+            command.CommandText = $@"INSERT INTO room_price
+                                    VALUES ('{offer.website.name}', {offer.room.hotel.licenseNumber},{offer.room.number},{offer.price})";
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
+                return false;
+            }
+            return true;
+        }
 
         public bool AddImage()
         {
@@ -1057,8 +1136,9 @@ namespace Trivago.Models
             {
                 command.ExecuteNonQuery();
             }
-            catch (OracleException)
+            catch (OracleException e)
             {
+                MessageBox.Show(e.ToString());
                 return false;
             }
             return true;
