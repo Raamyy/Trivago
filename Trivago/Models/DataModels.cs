@@ -54,20 +54,20 @@ namespace Trivago.Models
 
         public List<RoomType> GetAllRoomTypes()
         {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            /* Disconnected Mode */
+            /// <summary>
+            /// Gets a list of all room types in datbase.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Room_Type", oracleConnectionString);
+            DataSet dataset = new DataSet();
+            adapter.Fill(dataset);
 
-            command.CommandText = @"SELECT *
-                                    FROM room_type";
-
-            OracleDataReader reader = command.ExecuteReader();
             List<RoomType> roomTypes = new List<RoomType>();
-            while (reader.Read())
+            DataRow[] rows = dataset.Tables[0].Select();
+            foreach (var row in rows)
             {
-                string name = reader["type_name"].ToString();
-                int maxGuests = int.Parse(reader["maximum_guests"].ToString());
-
+                string name = row["type_name"].ToString();
+                int maxGuests = int.Parse(row["maximum_guests"].ToString());
                 roomTypes.Add(new RoomType(name, maxGuests));
             }
             return roomTypes;
@@ -1098,18 +1098,22 @@ namespace Trivago.Models
 
         public bool AddWebsite(Website website)
         {
-            command = new OracleCommand();
-            command.Connection = connection;
-            command.CommandType = CommandType.Text;
+            /* Disconnected Mode */
+            /// <summary>
+            /// Adds a new website to the database using Oracle Command Builder.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Website", oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            DataRow row = datatable.NewRow();
+            row["name"] = website.name;
+            row["rating"] = website.rating;
+            datatable.Rows.Add(row);
 
-            command.CommandText = @"INSERT INTO Website
-                                    (name, rating)
-                                    VALUES (:name, :rating)";
-            command.Parameters.Add("name", website.name);
-            command.Parameters.Add("rating", website.rating);
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
             try
             {
-                command.ExecuteNonQuery();
+                adapter.Update(datatable);
             }
             catch (OracleException)
             {
@@ -1196,6 +1200,25 @@ namespace Trivago.Models
             return true;
         }
 
+        public bool AddRoomView(Room room, RoomView view)
+        {
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"INSERT INTO Room_Views
+                                     (license_number, room_number, room_view)
+                                     VALUES ({room.hotel.licenseNumber}, {room.number}, '{view.view}')";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public bool RegisterUser(User user, string password)
         {
             /// <summary>
@@ -1271,6 +1294,311 @@ namespace Trivago.Models
                 return null;
 
             return GetUser(userName);
+        }
+
+        public int GetBookingId()
+        {
+            /// <summary>
+            /// Returns the next booking id available.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = @"SELECT Booking_Number
+                                    FROM Booking
+                                    ORDER BY booking_number DESC";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int id = int.Parse(reader["booking_number"].ToString());
+                return id + 1;
+            }
+            return 1;
+        }
+
+        /*
+         * Delete Methods
+         */
+
+        public bool DeleteBooking(int booking_number)
+        {
+            /// <summary>
+            /// Deletes booking table and the corresponding Define_Booking and Review
+            /// having the given booking number.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete the booking child records
+            command.CommandText = $@"DELETE FROM Define_Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            command.CommandText = $@"DELETE FROM Review
+                                     WHERE booking_number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            // Delete the booking record itself
+            command.CommandText = $@"DELETE FROM Booking
+                                     WHERE Booking_Number = {booking_number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteUser(User user)
+        {
+            /// <summary>
+            /// Deletes a user from the database and its corresponding credit card and bookings.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete child records
+            command.CommandText = $@"SELECT booking_number
+                                     FROM booking
+                                     WHERE user_name = '{user.username}'";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int num = Int32.Parse(reader["booking_number"].ToString());
+                if (!DeleteBooking(num))
+                    return false;
+            }
+
+            // Delete the user records itself and the corresponding credit card
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Delete_User";    // Deletes user and credit card
+            command.Parameters.Add("uName", user.username);
+            command.Parameters.Add("creditNumber", user.userCreditCard.cardSerial);
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool DeleteReview(Review review)
+        {
+            /* Disconnected Mode */
+            /// <summary>
+            /// Removes a booking review according to the booking number.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter(
+                $@"SELECT * FROM Review WHERE booking_number = {review.bookingNumber}",
+                oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            datatable.Rows[0].Delete();
+
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
+            try
+            {
+                adapter.Update(datatable);
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteWebsite(Website website)
+        {
+            /// <summary>
+            /// Deletes a website and its associated rooms and bookings.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            // Delete child records
+            command.CommandText = $@"DELETE FROM Room_Price
+                                     WHERE website_name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+
+            // Get associated bookings to invoke DeleteBooking
+            command.CommandText = $@"SELECT Booking_Number
+                                     FROM Define_Booking
+                                     WHERE website_name = '{website.name}'";
+            OracleDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int bookingNumber = int.Parse(reader["booking_number"].ToString());
+                if (!DeleteBooking(bookingNumber))
+                    return false;
+            }
+
+            command.CommandText = $@"DELETE FROM Website
+                                     WHERE name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /*
+         * Update Methods
+         */
+
+        public void UpdateHotel(Hotel hotel)
+        {
+            /// <summary>
+            /// Updates Hotel's name, city and country.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "Update_Hotel";
+
+            command.Parameters.Add("lNumber", hotel.licenseNumber);
+            command.Parameters.Add("name", hotel.name);
+            command.Parameters.Add("city", hotel.location.city);
+            command.Parameters.Add("city", hotel.location.country);
+
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                MessageBox.Show(e.ToString());
+                return;
+            }
+        }
+
+        public bool UpdateRoom(Room room)
+        {
+            /// <summary>
+            /// Updates a room table based on given room and adds the given view
+            /// to the room's views list.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Room
+                                     SET room_type = '{room.type.name}'
+                                     WHERE room_number = {room.number}
+                                     AND hotel_license_number = {room.hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool UpdateReview(Review review)
+        {
+            /// <summary>
+            /// Updates an existing review based on the given object.
+            /// </summary>
+            OracleDataAdapter adapter = new OracleDataAdapter("SELECT * FROM Review", oracleConnectionString);
+            DataTable datatable = new DataTable();
+            adapter.Fill(datatable);
+            DataRow[] rows = datatable.Select();
+
+            OracleCommandBuilder builder = new OracleCommandBuilder(adapter);
+            foreach(var row in rows)
+            {
+                if (row["booking_number"].ToString() == review.bookingNumber.ToString())
+                {
+                    row["description"] = review.description;
+                    row["rating"] = review.rating;
+                    adapter.Update(rows);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool UpdateWebsite(Website website)
+        {
+            /// <summary>
+            /// Updates a website rating.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Website
+                                     SET rating = {website.rating}
+                                     WHERE name = '{website.name}'";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(OracleException)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool UpdateRoomPrice(Room room, Website website, int price)
+        {
+            /// <summary>
+            /// Updates a room price relative to the hotel and website.
+            /// </summary>
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+            command.CommandText = $@"UPDATE Room_Price
+                                     SET price = {price}
+                                     WHERE website_name = '{website.name}'
+                                     AND license_number = {room.hotel.licenseNumber}
+                                     AND room_number = {room.number}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException)
+            {
+                return false;
+            }
+            return true;
         }
         
         public bool isAdmin(string userName, string password)

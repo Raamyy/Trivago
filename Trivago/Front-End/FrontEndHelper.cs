@@ -479,15 +479,14 @@ namespace Trivago.Front_End
 
             int price = int.Parse(priceBox.Text.ToString());
 
-            // TODO: remove when done
-/*
+
             bool done = database.UpdateRoomPrice(offer.room, offer.website, price);
 
             if (done)
                 MessageBox.Show("Offer Updated successfully !");
             else
                 MessageBox.Show("Couldn't update offer");
-                */
+                
         }
 
         public static void createAddOfferPopupWindow()
@@ -688,15 +687,13 @@ namespace Trivago.Front_End
             website.rating = newRating;
             DataModels database = DataModels.GetInstance();
             
-            // TODO: remove comment when function done
-
-            /*
+           
             bool done = database.UpdateWebsite(website);
             if(done)
                 MessageBox.Show("Website Updated successfully !");
             else
                 MessageBox.Show("Couldn't update website");
-            */
+           
         }
 
         private static void AddWebsiteConfirmButton_Click(object sender, RoutedEventArgs e)
