@@ -1477,6 +1477,68 @@ namespace Trivago.Models
             return true;
         }
 
+        public bool DeleteRoom(Room room)
+        {
+            List<Booking> roomBookings = GetRoomBookings(room);
+            foreach(Booking booking in roomBookings)
+            {
+                if (!DeleteBooking(booking.number))
+                    return false;
+            }
+
+            OracleCommand command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM room_views
+                                     WHERE room_number = {room.number}
+                                     AND license_number ={room.hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                return false;
+            }
+
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM room_price
+                                     WHERE room_number = {room.number}
+                                     AND license_number ={room.hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException e)
+            {
+                return false;
+            }
+
+            command = new OracleCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            command.CommandText = $@"DELETE FROM room
+                                     WHERE room_number = {room.number}
+                                     AND hotel_license_number ={room.hotel.licenseNumber}";
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (OracleException  e)
+            {
+                return false;
+            }
+
+            return true;
+
+        }
+
+
         /*
          * Update Methods
          */
