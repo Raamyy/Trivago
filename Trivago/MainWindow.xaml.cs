@@ -34,6 +34,7 @@ namespace Trivago
         public MainWindow()
         {
             InitializeComponent();
+            FrontEndHelper.SetMainWindow(this);
             InitializeInitialCanvases();
         }
 

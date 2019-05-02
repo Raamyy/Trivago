@@ -1046,8 +1046,8 @@ namespace Trivago.Models
             command.CommandType = CommandType.Text;
 
             command.CommandText = @"INSERT INTO Room
-                                    (room_number, hotel_liscence_number, room_type, room_image)
-                                    VALUES (:roomNumber, hoteNumber, roomType, roomImage)";
+                                    (room_number, hotel_license_number, room_type, room_image)
+                                    VALUES (:roomNumber, :hoteNumber, :roomType, :roomImage)";
             command.Parameters.Add("roomNUmber", room.number);
             command.Parameters.Add("hotelNumber", room.hotel.licenseNumber);
             command.Parameters.Add("roomType", room.type.name);
